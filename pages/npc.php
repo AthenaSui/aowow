@@ -120,7 +120,7 @@ class NpcPage extends GenericPage
         $infobox = Lang::getInfoBoxForFlags($this->subject->getField('cuFlags'));
 
         // Event (ignore events, where the object only gets removed)
-        if ($_ = DB::World()->selectCol('SELECT DISTINCT ge.eventEntry FROM game_event ge, game_event_creature gec, creature c WHERE ge.eventEntry = gec.eventEntry AND c.guid = gec.guid AND c.id = ?d', $this->typeId))
+        if ($_ = DB::World()->selectCol('SELECT DISTINCT ge.eventEntry FROM game_event ge, game_event_creature gec, creature c WHERE ge.eventEntry = gec.eventEntry AND c.guid = gec.guid AND c.id1 = ?d', $this->typeId))
         {
             $this->extendGlobalIds(Type::WORLDEVENT, ...$_);
             $ev = [];
@@ -372,7 +372,7 @@ class NpcPage extends GenericPage
             if (!$sai->prepare())                           // no smartAI found .. check per guid
             {
                 // at least one of many
-                $guids = DB::World()->selectCol('SELECT guid FROM creature WHERE id = ?d', $this->typeId);
+                $guids = DB::World()->selectCol('SELECT guid FROM creature WHERE id1 = ?d', $this->typeId);
                 while ($_ = array_pop($guids))
                 {
                     $sai = new SmartAI(SAI_SRC_TYPE_CREATURE, -$_, ['baseEntry' => $this->typeId, 'name' => $this->subject->getField('name', true), 'title' => ' [small](for GUID: '.$_.')[/small]']);
@@ -542,10 +542,15 @@ class NpcPage extends GenericPage
         if ($this->subject->getField('npcflag') & NPC_FLAG_TRAINER)
         {
             $teachQuery = '
-                SELECT  ts.SpellId AS ARRAY_KEY, ts.MoneyCost AS cost, ts.ReqSkillLine AS reqSkillId, ts.ReqSkillRank AS reqSkillValue, ts.ReqLevel AS reqLevel, ts.ReqAbility1 AS reqSpellId1, ts.reqAbility2 AS reqSpellId2
-                FROM    trainer_spell ts
-                JOIN    creature_default_trainer cdt ON cdt.TrainerId = ts.TrainerId
-                WHERE   cdt.Creatureid = ?d
+                SELECT    IFNULL(t2.SpellID, t1.SpellID) AS ARRAY_KEY,
+                          IFNULL(t2.MoneyCost, t1.MoneyCost) AS cost,
+                          IFNULL(t2.ReqSkillLine, t1.ReqSkillLine) AS reqSkillId,
+                          IFNULL(t2.ReqSkillRank, t1.ReqSkillRank) AS reqSkillValue,
+                          IFNULL(t2.ReqLevel, t1.ReqLevel) AS reqLevel,
+                          IFNULL(t2.ReqSpell, t1.ReqSpell) AS reqSkillId
+                FROM      npc_trainer t1
+                LEFT JOIN npc_trainer t2 ON t2.ID = IF(t1.SpellID < 0, -t1.SpellID, null)
+                WHERE     t1.ID = ?d
             ';
 
             if ($tSpells = DB::World()->select($teachQuery, $this->typeId))
@@ -569,21 +574,21 @@ class NpcPage extends GenericPage
                                 $this->extendGlobalIds(Type::SKILL, $_);
                                 if (!isset($extra[0]))
                                     $extra[0] = '$Listview.extraCols.condition';
-
-                                $data[$sId]['condition'][0][$this->typeId][] = [[CND_SKILL, $_, $train['reqSkillValue']]];
                             }
+
+                            $data[$sId]['condition'][0][$this->typeId][] = [[CND_SKILL, $_, $train['reqSkillValue']]];
                         }
 
-                        for ($i = 1; $i < 3; $i++)
+                        if ($_ = $train['reqSpellId'])
                         {
                             if ($_ = $train['reqSpellId'.$i])
                             {
                                 $this->extendGlobalIds(Type::SPELL, $_);
                                 if (!isset($extra[0]))
                                     $extra[0] = '$Listview.extraCols.condition';
-
-                                $data[$sId]['condition'][0][$this->typeId][] = [[CND_SPELL, $_]];
                             }
+
+                            $data[$sId]['condition'][0][$this->typeId][] = [[CND_SPELL, $_]];
                         }
 
                         if ($_ = $train['reqLevel'])
@@ -606,7 +611,7 @@ class NpcPage extends GenericPage
                     );
 
                     if ($extra)
-                        $tabData['extraCols'] = array_values($extra);
+                        $tabData['extraCols'] = $extra;
 
                     $this->lvTabs[] = ['spell', $tabData];
                 }
@@ -616,7 +621,7 @@ class NpcPage extends GenericPage
         }
 
         // tab: sells
-        if ($sells = DB::World()->selectCol('SELECT item FROM npc_vendor nv WHERE entry = ?d UNION SELECT item FROM game_event_npc_vendor genv JOIN creature c ON genv.guid = c.guid WHERE c.id = ?d', $this->typeId, $this->typeId))
+        if ($sells = DB::World()->selectCol('SELECT item FROM npc_vendor nv WHERE entry = ?d UNION SELECT item FROM game_event_npc_vendor genv JOIN creature c ON genv.guid = c.guid WHERE c.id1 = ?d', $this->typeId, $this->typeId))
         {
             $soldItems = new ItemList(array(['id', $sells]));
             if (!$soldItems->error)

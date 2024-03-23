@@ -1015,6 +1015,14 @@ class SpellList extends BaseType
         // hm, minor eval-issue. eval doesnt understand two operators without a space between them (eg. spelll: 18126)
         $formula = preg_replace('/(\+|-|\*|\/)(\+|-|\*|\/)/i', '\1 \2', $formula);
 
+        // remove first or last character if it is not a number
+        if (!is_numeric(substr($formula, -1)) && substr($formula, -1) !== ')') {
+            $formula = substr($formula, 0, -1);
+        }
+        if (!is_numeric(substr($formula, 0, 1)) && substr($formula, -1) !== ')') {
+            $formula = substr($formula, 1);
+        }
+
         // there should not be any letters without a leading $
         return eval('return '.$formula.';');
     }
@@ -2652,9 +2660,9 @@ class SpellListFilter extends Filter
         if (is_int($_))                         // specific
             return ['src.src'.$_, null, '!'];
         else if ($_)                            // any
-            return ['OR', ['src.src1', null, '!'], ['src.src2', null, '!'], ['src.src4', null, '!'], ['src.src5', null, '!'], ['src.src6', null, '!'], ['src.src7', null, '!'], ['src.src9', null, '!'], ['src.src10', null, '!']];
+            return ['OR', ['src.src1', null, '!'], ['src.src2', null, '!'], ['src.src4', null, '!'], ['src.src5', null, '!'], ['src.src6', null, '!'], ['src.src7', null, '!'], ['src.src9', null, '!']];
         else if (!$_)                           // none
-            return ['AND', ['src.src1', null], ['src.src2', null], ['src.src4', null], ['src.src5', null], ['src.src6', null], ['src.src7', null], ['src.src9', null], ['src.src10', null]];
+            return ['AND', ['src.src1', null], ['src.src2', null], ['src.src4', null], ['src.src5', null], ['src.src6', null], ['src.src7', null], ['src.src9', null]];
 
         return false;
     }
