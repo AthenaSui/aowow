@@ -18,11 +18,11 @@ SqlGen::register(new class extends SetupScript
     protected $dbcSourceFiles     = ['gemproperties', 'itemdisplayinfo', 'spell', 'glyphproperties', 'durabilityquality', 'durabilitycosts'];
 
     private $skill2cat = array(
-        773 => 11,                                          // inscription
-        356 =>  9,                                          // fishing
-        186 => 12,                                          // mining
-        185 =>  5,                                          // cooking
-        171 =>  6                                           // alchemy
+        SKILL_INSCRIPTION => 11,
+        SKILL_FISHING     =>  9,
+        SKILL_MINING      => 12,
+        SKILL_COOKING     =>  5,
+        SKILL_ALCHEMY     =>  6
     );
 
     public function generate(array $ids = []) : bool
@@ -131,29 +131,22 @@ SqlGen::register(new class extends SetupScript
                 spell_group sg ON sg.spell_id = it.spellid_1 AND it.class = 0 AND it.subclass = 2 AND sg.id IN (1, 2)
             LEFT JOIN
                 game_event ge ON ge.holiday = it.HolidayId AND it.HolidayId > 0
-            WHERE
-                it.entry > ?d
             {
-                AND it.entry IN (?a)
+            WHERE
+                it.entry IN (?a)
             }
-            ORDER BY
-                it.entry ASC
             LIMIT
-               ?d';
+               ?d, ?d';
 
-        $lastMax = 0;
-        while ($items = DB::World()->select($baseQuery, $lastMax, $ids ?: DBSIMPLE_SKIP, SqlGen::$sqlBatchSize))
+        $i = 0;
+        DB::Aowow()->query('TRUNCATE ?_items');
+        while ($items = DB::World()->select($baseQuery, $ids ?: DBSIMPLE_SKIP, SqlGen::$sqlBatchSize * $i, SqlGen::$sqlBatchSize))
         {
-            $newMax = max(array_column($items, 'entry'));
-
-            CLI::write(' * sets '.($lastMax + 1).' - '.$newMax);
-
-            $lastMax = $newMax;
+            CLI::write(' * batch #' . ++$i . ' (' . count($items) . ')', CLI::LOG_BLANK, true, true);
 
             foreach ($items as $item)
-                DB::Aowow()->query('REPLACE INTO ?_items VALUES (?a)', array_values($item));
+                DB::Aowow()->query('INSERT INTO ?_items VALUES (?a)', array_values($item));
         }
-
 
         // merge with gemProperties
         DB::Aowow()->query('UPDATE ?_items i, dbc_gemproperties gp SET i.gemEnchantmentId = gp.enchantmentId, i.gemColorMask = gp.colorMask WHERE i.gemColorMask = gp.id');
@@ -192,7 +185,7 @@ SqlGen::register(new class extends SetupScript
         // filter misc(class:15) junk(subclass:0) to appropriate categories
 
         // assign pets and mounts to category
-        DB::Aowow()->query('UPDATE ?_items i, dbc_spell s SET subClass = IF(effect1AuraId <> 78, 2, IF(effect2AuraId = 207 OR effect3AuraId = 207 OR (s.id <> 65917 AND effect2AuraId = 4 AND effect3Id = 77), -7, 5)) WHERE s.id = spellId2 AND class = 15 AND spellId1 IN (483, 55884)');
+        DB::Aowow()->query('UPDATE ?_items i, dbc_spell s SET subClass = IF(effect1AuraId <> 78, 2, IF(effect2AuraId = 207 OR effect3AuraId = 207 OR (s.id <> 65917 AND effect2AuraId = 4 AND effect3Id = 77), -7, 5)) WHERE s.id = spellId2 AND class = 15 AND spellId1 IN (?a)', LEARN_SPELLS);
 
         // more corner cases (mounts that are not actualy learned)
         DB::Aowow()->query('UPDATE ?_items i, dbc_spell s SET i.subClass = -7 WHERE (effect1Id = 64 OR (effect1AuraId = 78 AND effect2AuraId = 4 AND effect3Id = 77) OR effect1AuraId = 207 OR effect2AuraId = 207 OR effect3AuraId = 207) AND s.id = i.spellId1 AND i.class = 15 AND i.subClass = 5');
@@ -242,6 +235,26 @@ SqlGen::register(new class extends SetupScript
                 ))
             WHERE
                 durability > 0 AND ((classBak = 4 AND subClassBak IN (1, 2, 3, 4, 6)) OR (classBak = 2 AND subClassBak <> 9))');
+
+        // hide some nonsense
+        DB::Aowow()->query('UPDATE ?_items SET `cuFlags` = `cuFlags` | ?d WHERE
+            `name_loc0` LIKE "Monster - %"  OR  `name_loc0` LIKE "Creature - %" OR
+            `name_loc0` LIKE "%[PH]%"       OR  `name_loc0` LIKE "% PH %"       OR
+            `name_loc0` LIKE "%(new)%"      OR  `name_loc0` LIKE "%(old)%"      OR
+            `name_loc0` LIKE "%deprecated%" OR  `name_loc0` LIKE "%obsolete%"   OR
+            `name_loc0` LIKE "%1H%"         OR  `name_loc0` LIKE "%QA%"         OR
+            `name_loc0` LIKE "%(test)%"     OR  `name_loc0` LIKE "test %"       OR (`name_loc0` LIKE "% test %" AND `class` > 0)',
+            CUSTOM_EXCLUDE_FOR_LISTVIEW
+        );
+
+        // sanity check weapon class and invtype relation
+        $checks = array(
+            [[INVTYPE_WEAPONOFFHAND, INVTYPE_WEAPONMAINHAND, INVTYPE_WEAPON], [0, 4, 7, 13, 14, 15]],
+            [[INVTYPE_2HWEAPON], [1, 5, 6, 8, 10, 14, 20]],
+            [[INVTYPE_RANGED, INVTYPE_RANGEDRIGHT], [2, 3, 16, 18, 14, 19]]
+        );
+        foreach ($checks as [$slots, $subclasses])
+            DB::Aowow()->query('UPDATE ?_items SET `cuFlags` = `cuFlags` | ?d WHERE `class`= ?d AND `slotBak` IN (?a) AND `subClass` NOT IN (?a)', CUSTOM_EXCLUDE_FOR_LISTVIEW, ITEM_CLASS_WEAPON, $slots, $subclasses);
 
         $this->reapplyCCFlags('items', Type::ITEM);
 

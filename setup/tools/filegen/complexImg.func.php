@@ -143,7 +143,7 @@ if (!CLI)
             if ($ok)
             {
                 chmod($name.'.'.$ext, Util::FILE_ACCESS);
-                CLI::write($done.' - image '.$name.'.'.$ext.' written', CLI::LOG_OK);
+                CLI::write($done.' - image '.$name.'.'.$ext.' written', CLI::LOG_OK, true, true);
             }
             else
                 CLI::write($done.' - could not create image '.$name.'.'.$ext, CLI::LOG_ERROR);
@@ -268,9 +268,6 @@ if (!CLI)
         if (count(array_filter(array_column($paths, 2))) != count($paths))
         {
             CLI::write('one or more required directories are missing:', CLI::LOG_ERROR);
-            foreach ($missing as $m)
-                CLI::write(' - '.$m, CLI::LOG_ERROR);
-
             return;
         }
         else
@@ -317,7 +314,7 @@ if (!CLI)
 
                         if (!CLISetup::getOpt('force') && file_exists($name.'.jpg'))
                         {
-                            CLI::write($done.' - file '.$name.'.jpg was already processed');
+                            CLI::write($done.' - file '.$name.'.jpg was already processed', CLI::LOG_BLANK, true, true);
                             continue;
                         }
 
@@ -569,7 +566,7 @@ if (!CLI)
 
                             if (!CLISetup::getOpt('force') && file_exists($outFile[$idx].'.'.$info[1]))
                             {
-                                CLI::write($progress.' - file '.$outFile[$idx].'.'.$info[1].' was already processed');
+                                CLI::write($progress.' - file '.$outFile[$idx].'.'.$info[1].' was already processed', CLI::LOG_BLANK, true, true);
                                 $doSkip |= (1 << $idx);
                             }
                         }
@@ -618,7 +615,7 @@ if (!CLI)
                                 $outFile[$idx] = $destDir . sprintf($info[0], strtolower(Util::$localeStrings[$l]).'/') . $row['areaTableId'];
                                 if (!CLISetup::getOpt('force') && file_exists($outFile[$idx].'.'.$info[1]))
                                 {
-                                    CLI::write($progress.' - file '.$outFile[$idx].'.'.$info[1].' was already processed');
+                                    CLI::write($progress.' - file '.$outFile[$idx].'.'.$info[1].' was already processed', CLI::LOG_BLANK, true, true);
                                     $doSkip |= (1 << $idx);
                                 }
                             }
@@ -718,7 +715,7 @@ if (!CLI)
 
                     if (!CLISetup::getOpt('force') && file_exists($name.'.png'))
                     {
-                        CLI::write($done.' - file '.$name.'.png was already processed');
+                        CLI::write($done.' - file '.$name.'.png was already processed', CLI::LOG_BLANK, true, true);
                         continue;
                     }
 

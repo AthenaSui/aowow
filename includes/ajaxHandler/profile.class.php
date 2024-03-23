@@ -11,14 +11,14 @@ class AjaxProfile extends AjaxHandler
     protected $_get        = array(
         'id'         => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkIdList'  ],
         'items'      => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxProfile::checkItemList'],
-        'size'       => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_FLAG_STRIP_AOWOW     ],
+        'size'       => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkTextLine'],
         'guild'      => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkEmptySet'],
         'arena-team' => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkEmptySet'],
         'user'       => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxProfile::checkUser'    ]
     );
 
     protected $_post        = array(
-        'name'         => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkFulltext'],
+        'name'         => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkTextLine'],
         'level'        => ['filter' => FILTER_SANITIZE_NUMBER_INT],
         'class'        => ['filter' => FILTER_SANITIZE_NUMBER_INT],
         'race'         => ['filter' => FILTER_SANITIZE_NUMBER_INT],
@@ -28,12 +28,12 @@ class AjaxProfile extends AjaxHandler
         'talenttree2'  => ['filter' => FILTER_SANITIZE_NUMBER_INT],
         'talenttree3'  => ['filter' => FILTER_SANITIZE_NUMBER_INT],
         'activespec'   => ['filter' => FILTER_SANITIZE_NUMBER_INT],
-        'talentbuild1' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_FLAG_STRIP_AOWOW],
-        'glyphs1'      => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_FLAG_STRIP_AOWOW],
-        'talentbuild2' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_FLAG_STRIP_AOWOW],
-        'glyphs2'      => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_FLAG_STRIP_AOWOW],
-        'icon'         => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_FLAG_STRIP_AOWOW],
-        'description'  => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkFulltext'],
+        'talentbuild1' => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxProfile::checkTalentString'],
+        'glyphs1'      => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxProfile::checkGlyphString' ],
+        'talentbuild2' => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxProfile::checkTalentString'],
+        'glyphs2'      => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxProfile::checkGlyphString' ],
+        'icon'         => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkTextLine'    ],
+        'description'  => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkTextBlob'    ],
         'source'       => ['filter' => FILTER_SANITIZE_NUMBER_INT],
         'copy'         => ['filter' => FILTER_SANITIZE_NUMBER_INT],
         'public'       => ['filter' => FILTER_SANITIZE_NUMBER_INT],
@@ -573,7 +573,7 @@ class AjaxProfile extends AjaxHandler
             $profile['arenateams'] = $at;
 
         // pets if hunter fields: [name:name, family:petFamily, npc:npcId, displayId:modelId, talents:talentString]
-        if ($pets = DB::Aowow()->select('SELECT name, family, npc, displayId, talents FROM ?_profiler_pets WHERE owner = ?d', $pBase['id']))
+        if ($pets = DB::Aowow()->select('SELECT `name`, `family`, `npc`, `displayId`, CONCAT("$\"", `talents`, "\"") AS "talents" FROM ?_profiler_pets WHERE `owner` = ?d', $pBase['id']))
             $profile['pets'] = $pets;
 
         // source for custom profiles; profileId => [name, ownerId, iconString(optional)]
@@ -613,10 +613,12 @@ class AjaxProfile extends AjaxHandler
                     $profile['titles'] = $data;
                     break;
                 case Type::QUEST:
-                    foreach ($data as &$d)
-                        $d = 1;
+                    $qList   = new QuestList(array(['id', array_keys($data)], CFG_SQL_LIMIT_NONE));
+                    $qResult = [];
+                    foreach ($qList->iterate() as $id => $__)
+                        $qResult[$id] = [$qList->getField('cat1'), $qList->getField('cat2')];
 
-                    $profile['quests'] = $data;
+                    $profile['quests'] = $qResult;
                     break;
                 case Type::SPELL:
                     foreach ($data as &$d)
@@ -651,7 +653,7 @@ class AjaxProfile extends AjaxHandler
             }
         }
 
-        $buff = '';
+        $gItems = [];
 
         $usedSlots = [];
         if ($this->_get['items'])
@@ -668,7 +670,12 @@ class AjaxProfile extends AjaxHandler
                         if (in_array($sl, $invTypes) && !in_array($slot, $usedSlots))
                         {
                             // get and apply inventory
-                            $buff .= 'g_items.add('.$iId.', {name_'.User::$localeString.":'".Util::jsEscape($phItems->getField('name', true))."', quality:".$phItems->getField('quality').", icon:'".$phItems->getField('iconString')."', jsonequip:".Util::toJSON($data[$iId])."});\n";
+                            $gItems[$iId] = array(
+                                'name_'.User::$localeString => $phItems->getField('name', true),
+                                'quality'                   => $phItems->getField('quality'),
+                                'icon'                      => $phItems->getField('iconString'),
+                                'jsonequip'                 => $data[$iId]
+                            );
                             $profile['inventory'][$slot] = [$iId, 0, 0, 0, 0, 0, 0, 0];
 
                             $usedSlots[] = $slot;
@@ -684,22 +691,28 @@ class AjaxProfile extends AjaxHandler
             $itemz = new ItemList(array(['id', array_column($items, 'item')], CFG_SQL_LIMIT_NONE));
             if (!$itemz->error)
             {
-                $data  = $itemz->getListviewData(ITEMINFO_JSON | ITEMINFO_SUBITEMS);
+                $data = $itemz->getListviewData(ITEMINFO_JSON | ITEMINFO_SUBITEMS);
 
                 foreach ($items as $i)
                 {
                     if ($itemz->getEntry($i['item']) && !in_array($i['slot'], $usedSlots))
                     {
                         // get and apply inventory
-                        $buff .= 'g_items.add('.$i['item'].', {name_'.User::$localeString.":'".Util::jsEscape($itemz->getField('name', true))."', quality:".$itemz->getField('quality').", icon:'".$itemz->getField('iconString')."', jsonequip:".Util::toJSON($data[$i['item']])."});\n";
+                        $gItems[$i['item']] = array(
+                            'name_'.User::$localeString => $itemz->getField('name', true),
+                            'quality'                   => $itemz->getField('quality'),
+                            'icon'                      => $itemz->getField('iconString'),
+                            'jsonequip'                 => $data[$i['item']]
+                        );
                         $profile['inventory'][$i['slot']] = [$i['item'], $i['subItem'], $i['permEnchant'], $i['tempEnchant'], $i['gem1'], $i['gem2'], $i['gem3'], $i['gem4']];
                     }
                 }
             }
         }
 
-        if ($buff)
-            $buff .= "\n";
+        $buff = '';
+        foreach ($gItems as $id => $item)
+            $buff .= 'g_items.add('.$id.', '.Util::toJSON($item, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE).");\n";
 
 
         // if ($au = $char->getField('auras'))
@@ -758,6 +771,22 @@ class AjaxProfile extends AjaxHandler
     protected static function checkUser(string $val) : string
     {
         if (User::isValidName($val))
+            return $val;
+
+        return '';
+    }
+
+    protected static function checkTalentString(string $val) : string
+    {
+        if (preg_match('/^\d+$/', $val))
+            return $val;
+
+        return '';
+    }
+
+    protected static function checkGlyphString(string $val) : string
+    {
+        if (preg_match('/^\d+(:\d+)*$/', $val))
             return $val;
 
         return '';

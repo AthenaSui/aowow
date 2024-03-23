@@ -12,8 +12,11 @@ else
 
 mb_internal_encoding('UTF-8');
 
-
+// OS_WIN as per compile info of php
 define('OS_WIN', substr(PHP_OS, 0, 3) == 'WIN');
+
+// WIN10 and later usually support ANSI escape sequences
+define('CLI_HAS_E', !OS_WIN || (function_exists('sapi_windows_vt100_support') && sapi_windows_vt100_support(STDOUT)));
 
 
 require_once 'includes/defines.php';
@@ -262,7 +265,7 @@ if (!CLI)
                 User::useLocale($loc);
         }
 
-        Lang::load(User::$localeString);
+        Lang::load(User::$localeId);
     }
 
     // parse page-parameters .. sanitize before use!
@@ -270,11 +273,9 @@ if (!CLI)
     $_   = explode('=', $str, 2);
     $pageCall  = $_[0];
     $pageParam = $_[1] ?? '';
-
-    Util::$wowheadLink = 'http://'.Util::$subDomains[User::$localeId].'.wowhead.com/'.$str;
 }
 else if (!empty($AoWoWconf['aowow']))
-    Lang::load('enus');
+    Lang::load(LOCALE_EN);
 
 $AoWoWconf = null;                                          // empty auths
 

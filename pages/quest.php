@@ -10,29 +10,30 @@ class QuestPage extends GenericPage
 {
     use TrDetailPage;
 
+    protected $objectiveList = [];
+    protected $providedItem  = [];
+    protected $series        = [];
+    protected $gains         = [];
+    protected $mail          = [];
+    protected $rewards       = [];
+    protected $objectives    = '';
+    protected $details       = '';
+    protected $offerReward   = '';
+    protected $requestItems  = '';
+    protected $completed     = '';
+    protected $end           = '';
+    protected $suggestedPl   = 1;
+    protected $unavailable   = false;
+
     protected $type          = Type::QUEST;
     protected $typeId        = 0;
     protected $tpl           = 'quest';
     protected $path          = [0, 3];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'ShowOnMap.js']];
-    protected $css           = [[CSS_FILE, 'Book.css']];
+    protected $scripts       = [[SC_JS_FILE, 'js/ShowOnMap.js'], [SC_CSS_FILE, 'css/Book.css']];
 
     protected $_get          = ['domain' => ['filter' => FILTER_CALLBACK, 'options' => 'GenericPage::checkDomain']];
-
-    private   $catExtra      = array(
-                                3526 => 3524,
-                                363  =>   14,
-                                220  =>  215,
-                                188  =>  141,
-                                1769 =>  361,
-                                25   =>   46,
-                                132  =>    1,
-                                3431 => 3430,
-                                154  =>   85,
-                                9    =>   12
-                            );
 
     private   $powerTpl      = '$WowheadPower.registerQuest(%d, %d, %s);';
 
@@ -51,26 +52,27 @@ class QuestPage extends GenericPage
             $this->notFound(Lang::game('quest'), Lang::quest('notFound'));
 
         // may contain htmlesque tags
-        $this->name = Util::htmlEscape($this->subject->getField('name', true));
+        $this->name = Lang::unescapeUISequences(Util::htmlEscape($this->subject->getField('name', true)), Lang::FMT_HTML);
     }
 
     protected function generatePath()
     {
         // recreate path
         $this->path[] = $this->subject->getField('cat2');
-        if ($_ = $this->subject->getField('cat1'))
+        if ($cat = $this->subject->getField('cat1'))
         {
-            if (isset($this->catExtra[$_]))
-                $this->path[] = $this->catExtra[$_];
+            foreach (Game::$questSubCats as $parent => $children)
+                if (in_array($cat, $children))
+                    $this->path[] = $parent;
 
-            $this->path[] = $_;
+            $this->path[] = $cat;
         }
     }
 
     protected function generateTitle()
     {
         // page title already escaped
-        array_unshift($this->title, $this->subject->getField('name', true), Util::ucFirst(Lang::game('quest')));
+        array_unshift($this->title, Lang::unescapeUISequences($this->subject->getField('name', true), Lang::FMT_RAW), Util::ucFirst(Lang::game('quest')));
     }
 
     protected function generateContent()
@@ -162,7 +164,7 @@ class QuestPage extends GenericPage
 
         $jsg = [];
         // races
-        if ($_ = Lang::getRaceString($this->subject->getField('reqRaceMask'), $jsg, false))
+        if ($_ = Lang::getRaceString($this->subject->getField('reqRaceMask'), $jsg, Lang::FMT_MARKUP))
         {
             $this->extendGlobalIds(Type::CHR_RACE, ...$jsg);
             $t = count($jsg) == 1 ? Lang::game('race') : Lang::game('races');
@@ -170,7 +172,7 @@ class QuestPage extends GenericPage
         }
 
         // classes
-        if ($_ = Lang::getClassString($this->subject->getField('reqClassMask'), $jsg, false))
+        if ($_ = Lang::getClassString($this->subject->getField('reqClassMask'), $jsg, Lang::FMT_MARKUP))
         {
             $this->extendGlobalIds(Type::CHR_CLASS, ...$jsg);
             $t = count($jsg) == 1 ? Lang::game('class') : Lang::game('classes');
@@ -278,7 +280,7 @@ class QuestPage extends GenericPage
                     'side'    => $_side,
                     'typeStr' => Type::getFileString(Type::QUEST),
                     'typeId'  => $this->typeId,
-                    'name'    => $this->name,
+                    'name'    => Util::htmlEscape($this->subject->getField('name', true)),
                     '_next'   => $this->subject->getField('nextQuestIdChain')
                 )
             )
@@ -382,9 +384,6 @@ class QuestPage extends GenericPage
         /* Objectives List */
         /*******************/
 
-        $this->objectiveList = [];
-        $this->providedItem  = [];
-
         // gather ids for lookup
         $olItems    = $olNPCs    = $olGOs    = $olFactions = [];
         $olItemData = $olNPCData = $olGOData = null;
@@ -423,7 +422,7 @@ class QuestPage extends GenericPage
                 $this->objectiveList[] = array(
                     'typeStr'   => Type::getFileString(Type::ITEM),
                     'id'        => $itemId,
-                    'name'      => $olItemData->json[$itemId]['name'],
+                    'name'      => Lang::unescapeUISequences($olItemData->json[$itemId]['name'], Lang::FMT_HTML),
                     'qty'       => $qty > 1 ? $qty : 0,
                     'quality'   => 7 - $olItemData->json[$itemId]['quality'],
                     'extraText' => $provided ? '&nbsp;('.Lang::quest('provided').')' : ''
@@ -435,7 +434,7 @@ class QuestPage extends GenericPage
             {
                 $this->providedItem = array(
                     'id'        => $olItems[0][0],
-                    'name'      => $olItemData->json[$olItems[0][0]]['name'],
+                    'name'      => Lang::unescapeUISequences($olItemData->json[$olItems[0][0]]['name'], Lang::FMT_HTML),
                     'qty'       => $olItems[0][1] > 1 ? $olItems[0][1] : 0,
                     'quality'   => 7 - $olItemData->json[$olItems[0][0]]['quality']
                 );
@@ -507,7 +506,7 @@ class QuestPage extends GenericPage
                 $this->objectiveList[] = array(
                     'typeStr'   => Type::getFileString(Type::OBJECT),
                     'id'        => $i,
-                    'name'      => $pair[1] ?: Util::localizedString($olGOData->getEntry($i), 'name'),
+                    'name'      => $pair[1] ?: Lang::unescapeUISequences(Util::localizedString($olGOData->getEntry($i), 'name'), Lang::FMT_HTML),
                     'qty'       => $pair[0] > 1 ? $pair[0] : 0,
                     'extraText' => ''
                 );
@@ -570,7 +569,7 @@ class QuestPage extends GenericPage
         /* Mapper */
         /**********/
 
-        $this->addScript([JS_FILE, '?data=zones&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=zones']);
 
         // gather points of interest
         $mapNPCs = $mapGOs = [];                            // [typeId, start|end|objective, startItemId]
@@ -945,7 +944,7 @@ class QuestPage extends GenericPage
             BUTTON_LINKS   => array(
                 'linkColor' => 'ffffff00',
                 'linkId'    => 'quest:'.$this->typeId.':'.$_level,
-                'linkName'  => $this->name,
+                'linkName'  => Util::htmlEscape($this->subject->getField('name', true)),
                 'type'      => $this->type,
                 'typeId'    => $this->typeId
             )
@@ -972,11 +971,11 @@ class QuestPage extends GenericPage
         /**************/
 
         // tab: see also
-        $seeAlso = new QuestList(array(['name_loc'.User::$localeId, '%'.$this->name.'%'], ['id', $this->typeId, '!']));
+        $seeAlso = new QuestList(array(['name_loc'.User::$localeId, '%'.Util::htmlEscape($this->subject->getField('name', true)).'%'], ['id', $this->typeId, '!']));
         if (!$seeAlso->error)
         {
             $this->extendGlobalData($seeAlso->getJSGlobals());
-            $this->lvTabs[] = ['quest', array(
+            $this->lvTabs[] = [QuestList::$brickFile, array(
                 'data' => array_values($seeAlso->getListviewData()),
                 'name' => '$LANG.tab_seealso',
                 'id'   => 'see-also'
@@ -988,7 +987,7 @@ class QuestPage extends GenericPage
         if (!$criteriaOf->error)
         {
             $this->extendGlobalData($criteriaOf->getJSGlobals());
-            $this->lvTabs[] = ['achievement', array(
+            $this->lvTabs[] = [AchievementList::$brickFile, array(
                 'data' => array_values($criteriaOf->getListviewData()),
                 'name' => '$LANG.tab_criteriaof',
                 'id'   => 'criteria-of'
@@ -1003,7 +1002,7 @@ class QuestPage extends GenericPage
             if (!$pooledQuests->error)
             {
                 $this->extendGlobalData($pooledQuests->getJSGlobals());
-                $this->lvTabs[] = ['quest', array(
+                $this->lvTabs[] = [QuestList::$brickFile, array(
                     'data' => array_values($pooledQuests->getListviewData()),
                     'name' => 'Quest Pool',
                     'id'   => 'quest-pool',
@@ -1064,7 +1063,7 @@ class QuestPage extends GenericPage
         $power = new StdClass();
         if (!$this->subject->error)
         {
-            $power->{'name_'.User::$localeString}    = $this->subject->getField('name', true);
+            $power->{'name_'.User::$localeString}    = Lang::unescapeUISequences($this->subject->getField('name', true), Lang::FMT_RAW);
             $power->{'tooltip_'.User::$localeString} = $this->subject->renderTooltip();
             if ($this->subject->isDaily())
                 $power->daily = 1;
@@ -1125,7 +1124,7 @@ class QuestPage extends GenericPage
                     $rewards['items'][] = array(
                         'typeStr'   => Type::getFileString(Type::ITEM),
                         'id'        => $id,
-                        'name'      => $rewItems->getField('name', true),
+                        'name'      => Lang::unescapeUISequences($rewItems->getField('name', true), Lang::FMT_HTML),
                         'quality'   => $rewItems->getField('quality'),
                         'qty'       => $ri[$id],
                         'globalStr' => Type::getJSGlobalString(Type::ITEM)

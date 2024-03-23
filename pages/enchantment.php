@@ -10,6 +10,9 @@ class EnchantmentPage extends GenericPage
 {
     use TrDetailPage;
 
+    protected $effects       = [];
+    protected $activation    = [];
+
     protected $type          = Type::ENCHANTMENT;
     protected $typeId        = 0;
     protected $tpl           = 'enchantment';
@@ -169,7 +172,7 @@ class EnchantmentPage extends GenericPage
                 }
             }
 
-            $this->activateCondition = $x;
+            $this->activation = $x;
         }
 
         /**************/
@@ -180,7 +183,7 @@ class EnchantmentPage extends GenericPage
         $gemList = new ItemList(array(['gemEnchantmentId', $this->typeId]));
         if (!$gemList->error)
         {
-            $this->lvTabs[] = ['item', array(
+            $this->lvTabs[] = [ItemList::$brickFile, array(
                 'data' => array_values($gemList->getListviewData()),
                 'name' => '$LANG.tab_usedby + \' \' + LANG.gems',
                 'id'   => 'used-by-gem',
@@ -193,7 +196,7 @@ class EnchantmentPage extends GenericPage
         $socketsList = new ItemList(array(['socketBonus', $this->typeId]));
         if (!$socketsList->error)
         {
-            $this->lvTabs[] = ['item', array(
+            $this->lvTabs[] = [ItemList::$brickFile, array(
                 'data' => array_values($socketsList->getListviewData()),
                 'name' => '$LANG.tab_socketbonus',
                 'id'   => 'used-by-socketbonus',
@@ -218,18 +221,18 @@ class EnchantmentPage extends GenericPage
 
             $spellIds = $spellList->getFoundIDs();
             $conditions = array(
-                'OR',                  // [use, useUndelayed]
-                ['AND', ['spellTrigger1', [0, 5]], ['spellId1', $spellIds]],
-                ['AND', ['spellTrigger2', [0, 5]], ['spellId2', $spellIds]],
-                ['AND', ['spellTrigger3', [0, 5]], ['spellId3', $spellIds]],
-                ['AND', ['spellTrigger4', [0, 5]], ['spellId4', $spellIds]],
-                ['AND', ['spellTrigger5', [0, 5]], ['spellId5', $spellIds]]
+                'OR',
+                ['AND', ['spellTrigger1', [SPELL_TRIGGER_USE, SPELL_TRIGGER_USE_NODELAY]], ['spellId1', $spellIds]],
+                ['AND', ['spellTrigger2', [SPELL_TRIGGER_USE, SPELL_TRIGGER_USE_NODELAY]], ['spellId2', $spellIds]],
+                ['AND', ['spellTrigger3', [SPELL_TRIGGER_USE, SPELL_TRIGGER_USE_NODELAY]], ['spellId3', $spellIds]],
+                ['AND', ['spellTrigger4', [SPELL_TRIGGER_USE, SPELL_TRIGGER_USE_NODELAY]], ['spellId4', $spellIds]],
+                ['AND', ['spellTrigger5', [SPELL_TRIGGER_USE, SPELL_TRIGGER_USE_NODELAY]], ['spellId5', $spellIds]]
             );
 
             $ubItems = new ItemList($conditions);
             if (!$ubItems->error)
             {
-                $this->lvTabs[] = ['item', array(
+                $this->lvTabs[] = [ItemList::$brickFile, array(
                     'data' => array_values($ubItems->getListviewData()),
                     'name' => '$LANG.tab_usedby + \' \' + LANG.types[3][0]',
                     'id'   => 'used-by-item',
@@ -262,7 +265,7 @@ class EnchantmentPage extends GenericPage
                 }
             }
 
-            $this->lvTabs[] = ['spell', array(
+            $this->lvTabs[] = [SpellList::$brickFile, array(
                 'data' => array_values($spellData),
                 'name' => '$LANG.tab_usedby + \' \' + LANG.types[6][0]',
                 'id'   => 'used-by-spell',
@@ -296,7 +299,7 @@ class EnchantmentPage extends GenericPage
                         $data[$iId]['name']   .= ' '.Util::localizedString($ire[$iet[abs($re)]['ench']], 'name');
                     }
 
-                    $this->lvTabs[] = ['item', array(
+                    $this->lvTabs[] = [ItemList::$brickFile, array(
                         'data'      => array_values($data),
                         'id'        => 'used-by-rand',
                         'name'      => '$LANG.tab_usedby + \' \' + \''.Lang::item('_rndEnchants').'\'',

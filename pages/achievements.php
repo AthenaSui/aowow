@@ -15,7 +15,7 @@ class AchievementsPage extends GenericPage
     protected $path          = [0, 9];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -115,8 +115,11 @@ class AchievementsPage extends GenericPage
                 $tabData['_errors'] = 1;
         }
 
-        $this->lvTabs[] = ['achievement', $tabData];
+        $this->lvTabs[] = [AchievementList::$brickFile, $tabData];
+    }
 
+    protected function postCache()
+    {
         // sort for dropdown-menus in filter
         Lang::sort('game', 'si');
     }

@@ -10,12 +10,15 @@ class SpellsPage extends GenericPage
 {
     use TrListPage;
 
+    protected $classPanel    = false;
+    protected $glyphPanel    = false;
+
     protected $type          = Type::SPELL;
     protected $tpl           = 'spells';
     protected $path          = [0, 1];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -95,9 +98,6 @@ class SpellsPage extends GenericPage
 
         $this->name   = Util::ucFirst(Lang::game('spells'));
         $this->subCat = $pageParam !== '' ? '='.$pageParam : '';
-
-        $this->classPanel = false;
-        $this->glyphPanel = false;
     }
 
     protected function generateContent()
@@ -463,8 +463,11 @@ class SpellsPage extends GenericPage
         if ($hiddenCols)
             $tabData['hiddenCols'] = array_unique($hiddenCols);
 
-        $this->lvTabs[] = ['spell', $tabData];
+        $this->lvTabs[] = [SpellList::$brickFile, $tabData];
+    }
 
+    protected function postCache()
+    {
         // sort for dropdown-menus
         Lang::sort('game', 'ra');
         Lang::sort('game', 'cl');

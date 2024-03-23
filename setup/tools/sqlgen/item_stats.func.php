@@ -62,8 +62,8 @@ class ItemStatSetup extends ItemList
                     continue;
 
                 // armor & weapons only onEquip && consumables only onUse
-                if (!(in_array($this->curTpl['class'],  [ITEM_CLASS_WEAPON, ITEM_CLASS_ARMOR]) && $this->curTpl['spellTrigger'.$h] == 1) &&
-                    !(         $this->curTpl['class'] == ITEM_CLASS_CONSUMABLE                 && $this->curTpl['spellTrigger'.$h] == 0))
+                if (!(in_array($this->curTpl['class'],  [ITEM_CLASS_WEAPON, ITEM_CLASS_ARMOR]) && $this->curTpl['spellTrigger'.$h] == SPELL_TRIGGER_EQUIP) &&
+                    !(         $this->curTpl['class'] == ITEM_CLASS_CONSUMABLE                 && $this->curTpl['spellTrigger'.$h] == SPELL_TRIGGER_USE))
                     continue;
 
                 $equipSpells[] = $this->curTpl['spellId'.$h];
@@ -252,18 +252,16 @@ SqlGen::register(new class extends SetupScript
         CLI::write('   '.count($enchStats).' enchantments parsed');
         CLI::write(' - applying stats for items');
 
+        $i = 0;
         while (true)
         {
             $items = new ItemStatSetup($offset, SqlGen::$sqlBatchSize, $ids, $enchStats);
             if ($items->error)
                 break;
 
-            $max = max($items->getFoundIDs());
-            $num = count($items->getFoundIDs());
+            CLI::write(' * batch #' . ++$i . ' (' . count($items->getFoundIDs()) . ')', CLI::LOG_BLANK, true, true);
 
-            CLI::write(' * sets '.($offset + 1).' - '.($max));
-
-            $offset = $max;
+            $offset = max($items->getFoundIDs());
 
             $items->writeStatsTable();
         }

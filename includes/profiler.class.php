@@ -521,20 +521,29 @@ class Profiler
 
         if ($cl == CLASS_HUNTER)
         {
-            DB::Aowow()->query('DELETE FROM ?_profiler_pets WHERE owner = ?d', $profileId);
-            $pets = DB::Characters($realmId)->select('SELECT id AS ARRAY_KEY, id, entry, modelId, name FROM character_pet WHERE owner = ?d', $charGuid);
+            DB::Aowow()->query('DELETE FROM ?_profiler_pets WHERE `owner` = ?d', $profileId);
+            $pets = DB::Characters($realmId)->select('SELECT `id` AS ARRAY_KEY, `entry`, `modelId`, `name` FROM character_pet WHERE `owner` = ?d', $charGuid);
             foreach ($pets as $petGuid => $petData)
             {
-                $morePet   = DB::Aowow()->selectRow('SELECT p.`type`, c.family FROM ?_pet p JOIN ?_creature c ON c.family = p.id WHERE c.id = ?d', $petData['entry']);
-                $petSpells = DB::Characters($realmId)->selectCol('SELECT spell FROM pet_spell WHERE guid = ?d', $petGuid);
+                $petSpells = DB::Characters($realmId)->selectCol('SELECT `spell` FROM pet_spell WHERE `guid` = ?d', $petGuid);
+                $morePet   = DB::Aowow()->selectRow(
+                   'SELECT    IFNULL(c3.`id`, IFNULL(c2.`id`, IFNULL(c1.`id`, c.`id`))) AS "entry", p.`type`, c.`family`
+                    FROM      ?_pet p
+                    JOIN      ?_creature c ON c.`family` = p.`id`
+                    LEFT JOIN ?_creature c1 ON c1.`difficultyEntry1` = c.id
+                    LEFT JOIN ?_creature c2 ON c2.`difficultyEntry2` = c.id
+                    LEFT JOIN ?_creature c3 ON c3.`difficultyEntry3` = c.id
+                    WHERE     c.`id` = ?d',
+                    $petData['entry']
+                );
 
-                $_ = DB::Aowow()->selectCol('SELECT spell AS ARRAY_KEY, MAX(IF(spell IN (?a), `rank`, 0)) FROM ?_talents WHERE class = 0 AND petTypeMask = ?d GROUP BY id ORDER BY row, col ASC', $petSpells ?: [0], 1 << $morePet['type']);
+                $_ = DB::Aowow()->selectCol('SELECT `spell` AS ARRAY_KEY, MAX(IF(`spell` IN (?a), `rank`, 0)) FROM ?_talents WHERE `class` = 0 AND `petTypeMask` = ?d GROUP BY `id` ORDER BY `row`, `col` ASC', $petSpells ?: [0], 1 << $morePet['type']);
                 $pet = array(
                     'id'        => $petGuid,
                     'owner'     => $profileId,
                     'name'      => $petData['name'],
                     'family'    => $morePet['family'],
-                    'npc'       => $petData['entry'],
+                    'npc'       => $morePet['entry'],
                     'displayId' => $petData['modelId'],
                     'talents'   => implode('', $_)
                 );
@@ -561,31 +570,20 @@ class Profiler
 
 
         // known skills (professions only)
-        $skAllowed = DB::Aowow()->selectCol('SELECT id FROM ?_skillline WHERE typeCat IN (9, 11) AND (cuFlags & ?d) = 0', CUSTOM_EXCLUDE_FOR_LISTVIEW);
-        $skills    = DB::Characters($realmId)->select('SELECT ?d AS id, ?d AS `type`, skill AS typeId, `value` AS cur, max FROM character_skills WHERE guid = ?d AND skill IN (?a)', $profileId, Type::SKILL, $char['guid'], $skAllowed);
-
-        // manually apply racial profession bonuses
+        $skAllowed = DB::Aowow()->selectCol('SELECT `id` FROM ?_skillline WHERE `typeCat` IN (9, 11) AND (`cuFlags` & ?d) = 0', CUSTOM_EXCLUDE_FOR_LISTVIEW);
+        $skills    = DB::Characters($realmId)->select('SELECT ?d AS `id`, ?d AS `type`, `skill` AS typeId, `value` AS cur, `max` FROM character_skills WHERE guid = ?d AND `skill` IN (?a)', $profileId, Type::SKILL, $char['guid'], $skAllowed);
+        $racials   = DB::Aowow()->select('SELECT `effect1MiscValue` AS ARRAY_KEY, `effect1DieSides` + `effect1BasePoints` AS qty, `reqRaceMask`, `reqClassMask` FROM ?_spell WHERE `typeCat` = -4 AND `effect1Id` = 6 AND `effect1AuraId` = 98');
+        // apply racial profession bonuses
         foreach ($skills as &$sk)
         {
-            // Blood Elves - Arcane Affinity
-            if ($sk['typeId'] == 333 && $char['race'] == 10)
+            if (!isset($racials[$sk['typeId']]))
+                continue;
+
+            $r = $racials[$sk['typeId']];
+            if ((!$r['reqRaceMask'] || $r['reqRaceMask'] & (1 << ($char['race'] - 1))) && (!$r['reqClassMask'] || $r['reqClassMask'] & (1 << ($char['class'] - 1))))
             {
-                $sk['cur'] += 10;
-                $sk['max'] += 10;
-            }
-            // Draenei - Gemcutting
-            if ($sk['typeId'] == 755 && $char['race'] == 11)
-            {
-                $sk['cur'] += 5;
-                $sk['max'] += 5;
-            }
-            // Tauren - Cultivation
-            // Gnomes - Engineering Specialization
-            if (($sk['typeId'] == 182 && $char['race'] == 6) ||
-                ($sk['typeId'] == 202 && $char['race'] == 7))
-            {
-                $sk['cur'] += 15;
-                $sk['max'] += 15;
+                $sk['cur'] += $r['qty'];
+                $sk['max'] += $r['qty'];
             }
         }
         unset($sk);
@@ -677,7 +675,7 @@ class Profiler
             foreach (Util::createSqlBatchInsert($achievements) as $a)
                 DB::Aowow()->query('INSERT INTO ?_profiler_completion (?#) VALUES '.$a, array_keys($achievements[0]));
 
-            $data['achievementpoints'] = DB::Aowow()->selectCell('SELECT SUM(points) FROM ?_achievement WHERE id IN (?a)', array_column($achievements, 'typeId'));
+            $data['achievementpoints'] = DB::Aowow()->selectCell('SELECT SUM(points) FROM ?_achievement WHERE id IN (?a) AND (flags & ?d) = 0', array_column($achievements, 'typeId'), ACHIEVEMENT_FLAG_COUNTER);
         }
 
         CLI::write(' ..achievements');
@@ -727,6 +725,8 @@ class Profiler
             $data['guildRank'] = $guild['rank'];
         }
 
+        CLI::write(' ..basic guild data');
+
 
         // arena teams
         $teams = DB::Characters($realmId)->select('SELECT at.arenaTeamId AS ARRAY_KEY, at.name, at.type, IF(at.captainGuid = atm.guid, 1, 0) AS captain, atm.* FROM arena_team at JOIN arena_team_member atm ON atm.arenaTeamId = at.arenaTeamId WHERE atm.guid = ?d', $char['guid']);
@@ -756,6 +756,16 @@ class Profiler
                 'seasonGames'    => $t['seasonGames'],
                 'seasonWins'     => $t['seasonWins'],
                 'personalRating' => $t['personalRating']
+            );
+
+            // Delete members from other teams of the same type
+            DB::Aowow()->query(
+               'DELETE atm
+                FROM   ?_profiler_arena_team_member atm
+                JOIN   ?_profiler_arena_team at ON atm.`arenaTeamId` = at.`id` AND at.`type` = ?d
+                WHERE  atm.`profileId` = ?d',
+                $t['type'],
+                $profileId
             );
 
             DB::Aowow()->query('INSERT INTO ?_profiler_arena_team_member (?#) VALUES (?a) ON DUPLICATE KEY UPDATE ?a', array_keys($member), array_values($member), array_slice($member, 2));
@@ -915,11 +925,21 @@ class Profiler
                 $members[$mGuid]['profileId']   = $mProfiles->getField('id');
             }
 
+            // Delete members from other teams of the same type...
+            DB::Aowow()->query(
+               'DELETE atm
+                FROM   ?_profiler_arena_team_member atm
+                JOIN   ?_profiler_arena_team at ON atm.`arenaTeamId` = at.`id` AND at.`type` = ?d
+                WHERE  atm.`profileId` IN (?a)',
+                $team['type'],
+                array_column($members, 'profileId')
+            );
+
+            // ...and purge this teams member
             DB::Aowow()->query('DELETE FROM ?_profiler_arena_team_member WHERE arenaTeamId = ?d', $teamId);
 
             foreach (Util::createSqlBatchInsert($members) as $m)
                 DB::Aowow()->query('INSERT INTO ?_profiler_arena_team_member (?#) VALUES '.$m, array_keys(reset($members)));
-
         }
         else
             return false;

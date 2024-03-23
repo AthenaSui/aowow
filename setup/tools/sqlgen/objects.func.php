@@ -23,7 +23,7 @@ SqlGen::register(new class extends SetupScript
                 IF(`type` = 2, -2,                                                                  -- quests 1
                     IF(`type` = 8 AND Data0 IN (1, 2, 3, 4, 1552), -6,                              -- tools
                     IF(`type` = 3 AND IFNULL(gqi.ItemId, 0) <> 0, -2,                               -- quests 2
-                    IF(`type` IN (3, 9, 25), `type`, 0)))),                                         -- regular chests, books, pools
+                    IF(`type` IN (3, 6, 9, 25), `type`, 0)))),                                      -- regular chests, traps, books, fishing pools
                 0 AS event,                                                                         -- linked worldevent
                 displayId,
                 go.name,
@@ -76,17 +76,14 @@ SqlGen::register(new class extends SetupScript
                 gameobject_template_locale gtl8 ON go.entry = gtl8.entry AND gtl8.`locale` = "ruRU"
             LEFT JOIN
                 gameobject_questitem gqi ON gqi.GameObjectEntry = go.entry
-            WHERE
-                go.entry > ?d
             {
-                AND go.entry IN (?a)
+            WHERE
+                go.entry IN (?a)
             }
             GROUP BY
                 go.entry
-            ORDER BY
-                go.entry ASC
             LIMIT
-                ?d';
+                ?d, ?d';
 
         $updateQuery = '
             UPDATE
@@ -104,17 +101,14 @@ SqlGen::register(new class extends SetupScript
                 o.id IN (?a)
             }';
 
-        $lastMax = 0;
-        while ($objects = DB::World()->select($baseQuery, $lastMax, $ids ?: DBSIMPLE_SKIP, SqlGen::$sqlBatchSize))
+        $i = 0;
+        DB::Aowow()->query('TRUNCATE ?_objects');
+        while ($objects = DB::World()->select($baseQuery, $ids ?: DBSIMPLE_SKIP, SqlGen::$sqlBatchSize * $i, SqlGen::$sqlBatchSize))
         {
-            $newMax = max(array_column($objects, 'entry'));
+            CLI::write(' * batch #' . ++$i . ' (' . count($objects) . ')', CLI::LOG_BLANK, true, true);
 
-            CLI::write(' * sets '.($lastMax + 1).' - '.$newMax);
-
-            $lastMax = $newMax;
-
-            foreach ($objects as $o)
-                DB::Aowow()->query('REPLACE INTO ?_objects VALUES (?a)', array_values($o));
+            foreach ($objects as $object)
+                DB::Aowow()->query('INSERT INTO ?_objects VALUES (?a)', array_values($object));
         }
 
         // apply typeCat and reqSkill depending on locks

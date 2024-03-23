@@ -325,7 +325,8 @@ var mn_objects = [
     [-3,"Kräuter"],
     [-4,"Erzadern"],
     [-2,"Quest"],
-    [-6,"Werkzeuge"]
+    [-6,"Werkzeuge"],
+    [6,"Fallen"]
 ];
 var mn_quests = [
     [,"Kontinent"],
@@ -1449,6 +1450,7 @@ var g_object_types = {
        0: 'Anderes',
        9: 'Buch',
        3: 'Behälter',
+       6: 'Falle',
     "-5": 'Truhe',
       25: 'Fischschwarm',
     "-3": 'Kraut',
@@ -3176,6 +3178,7 @@ var LANG = {
     tab_weaponskills:        "Waffenfertigkeit",
     tab_world:               "Welt",
     tab_zones:               "Gebiete",
+    tab_bonusloot:           "Bonusbeute",                  // aowow - custom from BONUS_LOOT_LABEL
 
     numberofupvotesreceived_tip: "Anzahl von positiven Bewertungen erhalten",
     deletethisreply_stc:         "Antwort löschen",
@@ -3612,8 +3615,8 @@ var LANG = {
                             [1, "Heilig"],                          [0, "Physisch"]
                         ],
         gem:            [
-                            [7, "Ja"],                              [1, "Meta"],                            [2, "Rot"],                             [3, "Gelb"],                            [4, "Blau"],
-                            [8, "Nein"]
+                            [5, "Ja"],                              [1, "Meta"],                            [2, "Rot"],                             [3, "Gelb"],                            [4, "Blau"],
+                            [6, "Nein"]
                         ],
         profession:     [
                             [11, "Ja"],                             [1, "Alchemie"],                        [13, "Angeln"],                         [9, "Bergbau"],                         [6, "Erste Hilfe"],
@@ -3645,7 +3648,7 @@ var LANG = {
                         ],
         event:          [
                             [424, "Angelwettstreit der Kalu'ak"],   [301, "Anglerwettbewerb im Schlingendorntal"],                                  [372, "Braufest"],                      [374, "Dunkelmond-Jahrmarkt"],
-                            [321, "Erntedankfest"],                 [201, "Kinderwoche"],                   [335, "Liebe liegt in der Luft"],       [327, "Mondfest"],                      [181, "Nobelgartenfest"],
+                            [321, "Erntedankfest"],                 [201, "Kinderwoche"],                   [423, "Liebe liegt in der Luft"],       [327, "Mondfest"],                      [181, "Nobelgartenfest"],
                             [404, "Pilgerfreudenfest"],             [398, "Piratentag"],                    [324, "Schlotternächte"],               [341, "Sonnenwendfest"],                [409, "Tag der Toten"],
                             [141, "Winterhauchfest"],               [283, "Zu den Waffen: Alteractal"],     [285, "Zu den Waffen: Arathibecken"],   [353, "Zu den Waffen: Auge des Sturms"],[420, "Zu den Waffen: Insel der Eroberung"],
                             [284, "Zu den Waffen: Kriegshymnenschlucht"],                                   [400, "Zu den Waffen: Strand der Uralten"]

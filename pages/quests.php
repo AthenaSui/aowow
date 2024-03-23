@@ -15,7 +15,7 @@ class QuestsPage extends GenericPage
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
     protected $validCats     = [];
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -86,7 +86,7 @@ class QuestsPage extends GenericPage
         if ($this->filterObj->error)
             $tabData['_errors'] = 1;
 
-        $this->lvTabs[] = ['quest', $tabData];
+        $this->lvTabs[] = [QuestList::$brickFile, $tabData];
     }
 
     protected function generateTitle()

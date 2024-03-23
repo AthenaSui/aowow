@@ -10,13 +10,15 @@ class NpcsPage extends GenericPage
 {
     use TrListPage;
 
+    protected $petFamPanel   = false;
+
     protected $type          = Type::NPC;
     protected $tpl           = 'npcs';
     protected $path          = [0, 4];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
     protected $validCats     = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -33,7 +35,7 @@ class NpcsPage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=zones&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=zones']);
 
         $conditions = [];
 
@@ -45,8 +47,6 @@ class NpcsPage extends GenericPage
             $conditions[] = ['type', $this->category[0]];
             $this->petFamPanel = $this->category[0] == 1;
         }
-        else
-            $this->petFamPanel = false;
 
         if ($_ = $this->filterObj->getConditions())
             $conditions[] = $_;
@@ -90,8 +90,11 @@ class NpcsPage extends GenericPage
         if ($this->filterObj->error)
             $tabData['_errors'] = 1;
 
-        $this->lvTabs[] = ['creature', $tabData];
+        $this->lvTabs[] = [CreatureList::$brickFile, $tabData];
+    }
 
+    protected function postCache()
+    {
         // sort for dropdown-menus
         Lang::sort('game', 'fa');
     }

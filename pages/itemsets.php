@@ -15,7 +15,7 @@ class ItemsetsPage extends GenericPage
     protected $path     = [0, 2];
     protected $tabId    = 0;
     protected $mode     = CACHE_TYPE_PAGE;
-    protected $js       = [[JS_FILE, 'filters.js']];
+    protected $scripts  = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -31,7 +31,7 @@ class ItemsetsPage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=weight-presets&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=weight-presets']);
 
         $conditions = [];
 
@@ -71,8 +71,11 @@ class ItemsetsPage extends GenericPage
         if ($this->filterObj->error)
             $tabData['_errors'] = 1;
 
-        $this->lvTabs[] = ['itemset', $tabData];
+        $this->lvTabs[] = [ItemsetList::$brickFile, $tabData];
+    }
 
+    protected function postCache()
+    {
         // sort for dropdown-menus
         Lang::sort('itemset', 'notes', SORT_NATURAL);
         Lang::sort('game', 'si');

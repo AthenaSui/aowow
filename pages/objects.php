@@ -15,14 +15,14 @@ class ObjectsPage extends GenericPage
     protected $path          = [0, 5];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $validCats     = [-2, -3, -4, -5, -6, 0, 3, 9, 25];
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $validCats     = [-2, -3, -4, -5, -6, 0, 3, 6, 9, 25];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
     public function __construct($pageCall, $pageParam)
     {
-        $this->getCategoryFromUrl($pageParam);;
+        $this->getCategoryFromUrl($pageParam);
         $this->filterObj = new GameObjectListFilter(false, ['parentCats' => $this->category]);
 
         parent::__construct($pageCall, $pageParam);
@@ -33,7 +33,7 @@ class ObjectsPage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=zones&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=zones']);
 
         $conditions = [];
 
@@ -73,7 +73,7 @@ class ObjectsPage extends GenericPage
                 $tabData['_errors'] = 1;
         }
 
-        $this->lvTabs[] = ['object', $tabData];
+        $this->lvTabs[] = [GameObjectList::$brickFile, $tabData];
     }
 
     protected function generateTitle()

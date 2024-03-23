@@ -325,7 +325,8 @@ var mn_objects = [
     [-3,"Herbs"],
     [-4,"Mineral Veins"],
     [-2,"Quest"],
-    [-6,"Tools"]
+    [-6,"Tools"],
+    [6,"Traps"]
 ];
 var mn_quests = [
     [,"Continents"],
@@ -1496,6 +1497,7 @@ var g_object_types = {
        0: 'Other',
        9: 'Book',
        3: 'Container',
+       6: 'Trap',
     "-5": 'Chest',
       25: 'Fishing Pool',
     "-3": 'Herb',
@@ -3225,6 +3227,7 @@ var LANG = {
     tab_weaponskills:        "Weapon Skills",
     tab_world:               "World",
     tab_zones:               "Zones",
+    tab_bonusloot:           "Bonus Loot",                  // aowow - custom from BONUS_LOOT_LABEL
 
     numberofupvotesreceived_tip: "Number of upvotes received",
     deletethisreply_stc:         "Delete this reply",
@@ -3696,7 +3699,7 @@ var LANG = {
                             [372, "Brewfest"],                      [283, "Call to Arms: Alterac Valley"],  [285, "Call to Arms: Arathi Basin"],    [353, "Call to Arms: Eye of the Storm"],[420, "Call to Arms: Isle of Conquest"],
                             [400, "Call to Arms: Strand of the Ancients"],                                  [284, "Call to Arms: Warsong Gulch"],   [201, "Children's Week"],               [374, "Darkmoon Faire"],
                             [409, "Day of the Dead"],               [141, "Feast of Winter Veil"],          [324, "Hallow's End"],                  [321, "Harvest Festival"],              [424, "Kalu'ak Fishing Derby"],
-                            [335, "Love is in the Air"],            [327, "Lunar Festival"],                [341, "Midsummer Fire Festival"],       [181, "Noblegarden"],                   [404, "Pilgrim's Bounty"],
+                            [423, "Love is in the Air"],            [327, "Lunar Festival"],                [341, "Midsummer Fire Festival"],       [181, "Noblegarden"],                   [404, "Pilgrim's Bounty"],
                             [398, "Pirates' Day"],                  [301, "Stranglethorn Fishing Extravaganza"]
                         ],
         pvp:            [   [1, "Yes"],                             [3, "Arena"],                           [4, "Battleground"],                    [5, "World"],                           [2, "No"]                           ],

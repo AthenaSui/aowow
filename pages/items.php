@@ -10,12 +10,15 @@ class ItemsPage extends GenericPage
 {
     use TrListPage;
 
+    protected $forceTabs     = false;
+    protected $gemScores     = [];
+
     protected $type          = Type::ITEM;
     protected $tpl           = 'items';
     protected $path          = [0, 0];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'filters.js'], [JS_FILE, 'swfobject.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js'], [SC_JS_FILE, 'js/swfobject.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -76,6 +79,7 @@ class ItemsPage extends GenericPage
         13 => true
     );
 
+    private $filterOpts      = [];
     private $sharedLV        = array(                       // common listview components across all tabs
         'hiddenCols'  => [],
         'visibleCols' => [],
@@ -96,7 +100,7 @@ class ItemsPage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=weight-presets&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=weight-presets']);
 
         $conditions = [];
 
@@ -175,8 +179,8 @@ class ItemsPage extends GenericPage
             $upgItems = new ItemList(array(['id', array_keys($this->filter['upg'])]), ['extraOpts' => $this->filterObj->extraOpts]);
             if (!$upgItems->error)
             {
-                $this->extendGlobalData($upgItems->getJSGlobals());
                 $upgItemData = $upgItems->getListviewData($infoMask);
+                $this->extendGlobalData($upgItems->getJSGlobals(GLOBALINFO_SELF | GLOBALINFO_RELATED));
             }
         }
 
@@ -316,11 +320,11 @@ class ItemsPage extends GenericPage
             if ($items->error)
                 continue;
 
-            $this->extendGlobalData($items->getJSGlobals());
             $tabData = array_merge(
                 ['data' => $items->getListviewData($infoMask)],
                 $this->sharedLV
             );
+            $this->extendGlobalData($items->getJSGlobals(GLOBALINFO_SELF | GLOBALINFO_RELATED));
 
             $upg = [];
             if ($upgItemData)
@@ -418,7 +422,7 @@ class ItemsPage extends GenericPage
 
             $tabData['data'] = array_values($tabData['data']);
 
-            $this->lvTabs[] = ['item', $tabData];
+            $this->lvTabs[] = [ItemList::$brickFile, $tabData];
         }
 
         // reformat for use in template
@@ -429,9 +433,12 @@ class ItemsPage extends GenericPage
         if (empty($this->lvTabs))
         {
             $this->forceTabs = false;
-            $this->lvTabs[]  = ['item', ['data' => []]];
+            $this->lvTabs[]  = [ItemList::$brickFile, ['data' => []]];
         }
+    }
 
+    protected function postCache()
+    {
         // sort for dropdown-menus
         Lang::sort('game', 'ra');
         Lang::sort('game', 'cl');
@@ -463,10 +470,10 @@ class ItemsPage extends GenericPage
 
         // if slot-dropdown is available && Armor && $path points to Armor-Class
         $form = $this->filterObj->getForm();
-        if (count($this->path) == 4 && $this->category[0] == 4 && isset($form['sl']) && !is_array($form['sl']))
-            $this->path[] = $form['sl'];
-        else if (!empty($this->category[0]) && $this->category[0] == 0 && isset($form['ty']) && !is_array($form['ty']))
-            $this->path[] = $form['ty'];
+        if (count($this->path) == 4 && $this->category[0] == 4 && isset($form['sl']) && count($form['sl']) == 1)
+            $this->path[] = $form['sl'][0];
+        else if (isset($this->category[0]) && $this->category[0] == 0 && isset($form['ty']) && count($form['ty']) == 1)
+            $this->path[] = $form['ty'][0];
     }
 
     // fetch best possible gems for chosen weights
@@ -482,7 +489,7 @@ class ItemsPage extends GenericPage
             $this->sharedLV['computeDataFunc'] = '$fi_scoreSockets';
 
             $q    = intVal($this->filter['gm']);
-            $mask = 14;
+            $mask = 0xE;
             $cnd  = [10, ['class', ITEM_CLASS_GEM], ['gemColorMask', &$mask, '&'], ['quality', &$q]];
             if (!isset($this->filter['jc']))
                 $cnd[] = ['itemLimitCategory', 0];          // Jeweler's Gems
@@ -500,7 +507,7 @@ class ItemsPage extends GenericPage
             for ($i = 0; $i < 4; $i++)
             {
                 $mask = 1 << $i;
-                $q    = !$i ? 3 : intVal($this->filter['gm']);    // meta gems are always included.. ($q is backReferenced)
+                $q    = !$i ? ITEM_QUALITY_RARE : intVal($this->filter['gm']);    // meta gems are always included.. ($q is backReferenced)
                 $byColor = new ItemList($cnd, ['extraOpts' => $this->filterObj->extraOpts]);
                 if (!$byColor->error)
                 {

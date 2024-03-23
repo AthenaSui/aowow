@@ -10,13 +10,15 @@ class ZonesPage extends GenericPage
 {
     use TrListPage;
 
+    protected $map       = null;
+
     protected $type      = Type::ZONE;
     protected $tpl       = 'list-page-generic';
     protected $path      = [0, 6];
     protected $tabId     = 0;
     protected $mode      = CACHE_TYPE_PAGE;
     protected $validCats = [true, true, [0, 1, 2], [0, 1, 2], false, false, true, false, true, true, true];
-    protected $js        = [[JS_FILE, 'ShowOnMap.js']];
+    protected $scripts   = [[SC_JS_FILE, 'js/ShowOnMap.js']];
 
     public function __construct($pageCall, $pageParam)
     {
@@ -82,8 +84,7 @@ class ZonesPage extends GenericPage
         if ($hiddenCols)
             $tabData['hiddenCols'] = $hiddenCols;
 
-        $this->map      = null;
-        $this->lvTabs[] = ['zone', $tabData];
+        $this->lvTabs[] = [ZoneList::$brickFile, $tabData];
 
         // create flight map
         if ($mapFile)

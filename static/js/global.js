@@ -641,15 +641,18 @@ var PageTemplate = new function()
     {
         var submenu = [];
 
+        if (!g_user.guides || !g_user.guides.length)
+            return;
+
         // Sort by name
-        g_user.profiles.sort(function(a, b)
+        g_user.guides.sort(function(a, b)
         {
             return $WH.strcmp(a.title, b.title);
         });
 
         $.each(g_user.guides, function(idx, guide)
         {
-            var menuItem = [guide.id, guide.title, guide.url, [[guide.id, LANG.button_edit, '/?guide=edit&id=' + guide.id]]];
+            var menuItem = [guide.id, guide.title, guide.url, [[guide.id, LANG.button_edit, '?guide=edit&id=' + guide.id]]];
 
             submenu.push(menuItem);
         });
@@ -10252,10 +10255,28 @@ Listview.templates = {
                 compute: function(guide, td)
                 {
                     $(td).append($('<a>').attr('href', '?guides=' + guide.category).text(l_guide_categories[guide.category]).css('color', 'white'));
+
+                    if (guide.classs && g_chr_specs[guide.classs])
+                    {
+                        $(td).append('&nbsp;' + LANG.dash + '&nbsp;').append($(Icon.create('class_' + g_file_classes[guide.classs], 0, null, '?class=' + guide.classs, null, null, false, null, true)));
+                        let txt = $('<span>').attr('class', 'c' + guide.classs).text(' ' + g_chr_classes[guide.classs]);
+                        if (guide.spec >= 0 && g_chr_specs[guide.classs][guide.spec])
+                        {
+                            $(td).append($(Icon.create(g_file_specs[guide.classs][guide.spec], 0, null, 'javascript:;', null, null, false, null, true)));
+                            txt = $('<span>').attr('class', 'c' + guide.classs).text(' ' + g_chr_specs[guide.classs][guide.spec]);
+                        }
+                        $(td).append(txt);
+                    }
                 },
                 getVisibleText: function(guide)
                 {
-                    return l_guide_categories[guide.category];
+                    let b = l_guide_categories[guide.category];
+                    if (guide.classs)
+                        b += ' ' + g_chr_classes[guide.classs];
+                    if (guide.spec >= 0)
+                        b += ' ' + g_chr_specs[guide.classs][guide.spec];
+
+                    return b;
                 },
                 sortFunc: function(a, b)
                 {
@@ -12914,14 +12935,113 @@ Listview.templates = {
                 hidden: true,
                 compute: function(spell, td) {
                     if (spell.source != null) {
-                        var buff = '';
-                        for (var i = 0, len = spell.source.length; i < len; ++i) {
-                            if (i > 0) {
-                                buff += LANG.comma;
+                        if (spell.source.length == 1) {
+                            $WH.nw(td);
+
+                            var sm = (spell.sourcemore ? spell.sourcemore[0] : {});
+                            var type = 0;
+
+                            if (sm.t) {
+                                type = sm.t;
+
+                                var a = $WH.ce('a');
+                                if (sm.q != null) {
+                                    a.className = 'q' + sm.q;
+                                }
+                                else {
+                                    a.className = 'q1';
+                                }
+                                a.href = '?' + g_types[sm.t] + '=' + sm.ti;
+                                a.style.whiteSpace = 'nowrap';
+
+                                if (sm.icon) {
+                                    a.className += ' icontiny tinyspecial';
+                                    a.style.backgroundImage = 'url("' + g_staticUrl + '/images/wow/icons/tiny/' + sm.icon.toLowerCase() + '.gif")';
+                                }
+
+                                $WH.ae(a, $WH.ct(sm.n));
+                                $WH.ae(td, a);
                             }
-                            buff += g_sources[spell.source[i]];
+                            else {
+                                $WH.ae(td, $WH.ct(Listview.funcBox.getUpperSource(spell.source[0], sm)));
+                            }
+
+                            var ls = Listview.funcBox.getLowerSource(spell.source[0], sm, type);
+
+                            if (this.iconSize != 0 && ls != null) {
+                                var div = $WH.ce('div');
+                                div.className = 'small2';
+
+                                if (ls.pretext) {
+                                    $WH.ae(div, $WH.ct(ls.pretext));
+                                }
+
+                                if (ls.url) {
+                                    var a = $WH.ce('a');
+                                    a.className = 'q1';
+                                    a.href = ls.url;
+                                    $WH.ae(a, $WH.ct(ls.text));
+                                    $WH.ae(div, a);
+                                }
+                                else {
+                                    $WH.ae(div, $WH.ct(ls.text));
+                                }
+
+                                if (ls.posttext) {
+                                    $WH.ae(div, $WH.ct(ls.posttext));
+                                }
+
+                                $WH.ae(td, div);
+                            }
                         }
+                        else {
+                            var buff = '';
+                            for (var i = 0, len = spell.source.length; i < len; ++i) {
+                                if (i > 0) {
+                                    buff += LANG.comma;
+                                }
+                                buff += g_sources[spell.source[i]];
+                            }
+                        }
+
                         return buff;
+                    }
+                },
+                getVisibleText: function(spell) {
+                    if (spell.source != null) {
+                        if (spell.source.length == 1) {
+                            var buff = '';
+
+                            var sm = (spell.sourcemore ? spell.sourcemore[0] : {});
+                            var type = 0;
+
+                            if (sm.t) {
+                                type = sm.t;
+                                buff += ' ' + sm.n;
+                            }
+                            else {
+                                buff += ' ' + Listview.funcBox.getUpperSource(spell.source[0], sm);
+                            }
+
+                            var ls = Listview.funcBox.getLowerSource(spell.source[0], sm, type);
+
+                            if (ls != null) {
+                                if (ls.pretext) {
+                                    buff += ' ' + ls.pretext;
+                                }
+
+                                buff += ' ' + ls.text;
+
+                                if (ls.posttext) {
+                                    buff += ' ' + ls.posttext;
+                                }
+                            }
+
+                            return buff;
+                        }
+                        else {
+                            return Listview.funcBox.arrayText(spell.source, g_sources);
+                        }
                     }
                 },
                 sortFunc: function(a, b, col) {
@@ -16060,7 +16180,7 @@ Listview.templates = {
 
                     // aowow custom
                     if (profile.renameItr) {
-                        $WH.ae(s, $WH.ct(LANG.pr_note_pendingrename));
+                        $WH.ae(d, $WH.ce('span', { className: 'q0'}, $WH.ct(LANG.pr_note_pendingrename)));
                     }
                     // end aowow custom
 
@@ -21868,7 +21988,7 @@ var Links = new function() {
         }
 
         var data = {
-            'wowheadurl': g_host +'?' + type + '=' + opt.typeId,
+            'wowheadurl': g_host +'/?' + type + '=' + opt.typeId,
             'armoryurl': 'http://us.battle.net/wow/en/' + type + '/' + opt.typeId,
             'ingamelink': link,
             'markuptag': '[' + (extraTypes[opt.type] || type) + '=' + opt.typeId + ']'

@@ -19,6 +19,7 @@ abstract class BaseType
 
     private   $itrStack  = [];
 
+    public static $dataTable  = '';
     public static $contribute = CONTRIBUTE_ANY;
 
     /*
@@ -445,7 +446,7 @@ abstract class BaseType
         'c2':   subCat [Quests]
       'icon':   iconString
     */
-    public function getSourceData() {}
+    public function getSourceData(int $id = 0) : array { return []; }
 
     // should return data required to display a listview of any kind
     // this is a rudimentary example, that will not suffice for most Types
@@ -624,7 +625,7 @@ trait spawnHelper
             $footer = '';
 
             if ($s['respawn'])
-                $info[1] = '<span class="q0">'.Lang::npc('respawnIn').Lang::main('colon').Util::formatTime($s['respawn'] * 1000, false).'</span>';
+                $info[1] = '<span class="q0">'.Lang::npc('respawnIn').Lang::main('colon').Lang::formatTime($s['respawn'] * 1000, 'game', 'timeAbbrev', true).'</span>';
 
             if (User::isInGroup(U_GROUP_STAFF))
             {
@@ -652,7 +653,7 @@ trait spawnHelper
                 }
 
                 // guid < 0 are vehicle accessories. those are moved by moving the vehicle
-                if (User::isInGroup(U_GROUP_MODERATOR) && $worldPos && $s['guid'] > 0)
+                if (User::isInGroup(U_GROUP_MODERATOR) && $worldPos && $s['guid'] > 0 && isset($worldPos[$s['guid']]))
                 {
                     if ($points = Game::worldPosToZonePos($worldPos[$s['guid']]['mapId'], $worldPos[$s['guid']]['posX'], $worldPos[$s['guid']]['posY']))
                     {
@@ -842,24 +843,134 @@ trait profilerHelper
     }
 }
 
+trait sourceHelper
+{
+    protected $sources    = [];
+    protected $sourceMore = null;
+
+    public function getSources(?array &$s, ?array &$sm) : bool
+    {
+        $s = $sm = null;
+        if (empty($this->sources[$this->id]))
+            return false;
+
+        if ($this->sourceMore === null)
+        {
+            $buff = [];
+            $this->sourceMore = [];
+
+            foreach ($this->iterate() as $_curTpl)
+                if ($_curTpl['moreType'] && $_curTpl['moreTypeId'])
+                    $buff[$_curTpl['moreType']][] = $_curTpl['moreTypeId'];
+
+            foreach ($buff as $type => $ids)
+                $this->sourceMore[$type] = Type::newList($type, [CFG_SQL_LIMIT_NONE, ['id', $ids]]);
+        }
+
+        $s = array_keys($this->sources[$this->id]);
+        if ($this->curTpl['moreType'] && $this->curTpl['moreTypeId'] && ($srcData = $this->sourceMore[$this->curTpl['moreType']]->getSourceData($this->curTpl['moreTypeId'])))
+            $sm = $srcData;
+        else if (!empty($this->sources[$this->id][SRC_PVP]))
+            $sm['p'] = $this->sources[$this->id][SRC_PVP][0];
+
+        if ($z = $this->curTpl['moreZoneId'])
+            $sm['z'] = $z;
+
+        if ($this->curTpl['moreMask'] & SRC_FLAG_BOSSDROP)
+            $sm['bd'] = 1;
+
+        if (isset($this->sources[$this->id][SRC_DROP][0]))
+        {
+            /*
+                mode        srcFlag     log2    dd Flag
+                10N/D-NH    0b0001      0       0b001
+                25N/D-HC    0b0010      1       0b010
+                10H         0b0100      2       0b011
+                25H         0b1000      3       0b100
+            */
+            if ($this->curTpl['moreMask'] & SRC_FLAG_DUNGEON_DROP)
+                $sm['dd'] = $this->sources[$this->id][SRC_DROP][0] * -1;
+            else if ($this->curTpl['moreMask'] & SRC_FLAG_RAID_DROP)
+            {
+                $dd = log($this->sources[$this->id][SRC_DROP][0], 2);
+                if ($dd == intVal($dd))                             // only one bit set
+                    $sm['dd'] = $dd + 1;
+            }
+        }
+
+        if ($sm)
+            $sm = [$sm];
+
+        return true;
+    }
+}
+
+
 abstract class Filter
 {
-    private static  $wCards      = ['*' => '%', '?' => '_'];
+    private static  $wCards = ['*' => '%', '?' => '_'];
 
-    public          $error       = false;                   // erronous search fields
+    public          $error  = false;                        // erronous search fields
 
-    private         $cndSet      = [];
+    private         $cndSet = [];
 
-    protected       $parentCats  = [];                      // used to validate ty-filter
-    protected       $inputFields = [];                      // list of input fields defined per page
-    protected       $fiData      = ['c' => [], 'v' =>[]];
-    protected       $formData    =  array(                  // data to fill form fields
+    /* genericFilter: [FILTER_TYPE, colOrFnName, param1, param2]
+        [FILTER_CR_BOOLEAN,   <string:colName>, <bool:isString>, null]
+        [FILTER_CR_FLAG,      <string:colName>, <int:testBit>,   <bool:matchAny>]       # default param2: matchExact
+        [FILTER_CR_NUMERIC,   <string:colName>, <int:NUM_FLAGS>, <bool:addExtraCol>]
+        [FILTER_CR_STRING,    <string:colName>, <int:STR_FLAGS>, null]
+        [FILTER_CR_ENUM,      <string:colName>, <bool:ANYNONE>,  <bool:isEnumVal>]      # param3 ? cr[2] is val in enum : key in enum
+        [FILTER_CR_STAFFFLAG, <string:colName>, null,            null]
+        [FILTER_CR_CALLBACK,  <string:fnName>,  <mixed:param1>,  <mixed:param2>]
+        [FILTER_CR_NYI_PH,    null,             <int:returnVal>, param2]                # mostly 1: to ignore this criterium; 0: to fail the whole query
+    */
+    protected       $genericFilter = [];
+
+    protected       $enums         = [];                    // criteriumID => [validOptionList]
+
+    /*
+        fieldId => [checkType, checkValue[, fieldIsArray]]
+    */
+    protected       $inputFields   = [];                    // list of input fields defined per page
+    protected       $parentCats    = [];                    // used to validate ty-filter
+    protected       $fiData        = ['c' => [], 'v' =>[]];
+    protected       $formData      =  array(                // data to fill form fields
                         'form'           => [],             // base form - unsanitized
                         'setCriteria'    => [],             // dynamic criteria list             - index checked
                         'setWeights'     => [],             // dynamic weights list              - index checked
                         'extraCols'      => [],             // extra columns for LV              - added as required
                         'reputationCols' => []              // simlar and exclusive to extraCols - added as required
                     );
+
+    protected const PATTERN_NAME = '/[\p{C};%\\\\]/ui';
+    protected const PATTERN_CRV  = '/[\p{C};:%\\\\]/ui';
+    protected const PATTERN_INT  = '/\D/';
+
+    protected const ENUM_FACTION       = array(  469,  1037,  1106,   529,  1012,    87,    21,   910,   609,   942,   909,   530,    69,   577,   930,  1068,  1104,   729,   369,    92,
+                                                  54,   946,    67,  1052,   749,    47,   989,  1090,  1098,   978,  1011,    93,  1015,  1038,    76,   470,   349,  1031,  1077,   809,
+                                                 911,   890,   970,   169,   730,    72,    70,   932,  1156,   933,   510,  1126,  1067,  1073,   509,   941,  1105,   990,   934,   935,
+                                                1094,  1119,  1124,  1064,   967,  1091,    59,   947,    81,   576,   922,    68,  1050,  1085,   889,   589,   270);
+    protected const ENUM_CURRENCY      = array(32572, 32569, 29736, 44128, 20560, 20559, 29434, 37829, 23247, 44990, 24368, 52027, 52030, 43016, 41596, 34052, 45624, 49426, 40752, 47241,
+                                               40753, 29024, 24245, 26045, 26044, 38425, 29735, 24579, 24581, 32897, 22484, 52026, 52029,  4291, 28558, 43228, 34664, 47242, 52025, 52028,
+                                               37836, 20558, 34597, 43589);
+    protected const ENUM_EVENT         = array(  372,   283,   285,   353,   420,   400,   284,   201,   374,   409,   141,   324,   321,   424,   423,   327,   341,  181,   404,    398,
+                                                 301);
+    protected const ENUM_ZONE          = array( 4494,    36,  2597,  3358,    45,   331,  3790,  4277,    16,  3524,     3,  3959,   719,  1584,    25,  1583,  2677,  3702,  3522,     4,
+                                                3525,  3537,    46,  1941,  2918,  3905,  4024,  2817,  4395,  4378,   148,   393,  1657,    41,  2257,   405,  2557,    65,  4196,     1,
+                                                  14,    10,    15,   139,    12,  3430,  3820,   361,   357,  3433,   721,   394,  3923,  4416,  2917,  4272,  4820,  4264,  3483,  3562,
+                                                 267,   495,  4742,  3606,   210,  4812,  1537,  4710,  4080,  3457,    38,  4131,  3836,  3792,  2100,  2717,   493,   215,  3518,  3698,
+                                                3456,  3523,  2367,  2159,  1637,  4813,  4298,  2437,   722,   491,    44,  3429,  3968,   796,  2057,    51,  3607,  3791,  3789,   209,
+                                                3520,  3703,  3711,  1377,  3487,   130,  3679,   406,  1519,  4384,    33,  2017,  1477,  4075,     8,   440,   141,  3428,  3519,  3848,
+                                                  17,  2366,  3840,  3713,  3847,  3775,  4100,  1581,  3557,  3845,  4500,  4809,    47,  3849,  4265,  4493,  4228,  3698,  4406,  3714,
+                                                3717,  3715,   717,    67,  3716,   457,  4415,   400,  1638,  1216,    85,  4723,  4722,  1337,  4273,   490,  1497,   206,  1196,  4603,
+                                                 718,  3277,    28,    40,    11,  4197,   618,  3521,  3805,    66,  1176,  1977);
+    protected const ENUM_HEROICDUNGEON = array( 4494,  3790,  4277,  4196,  4416,  4272,  4820,  4264,  3562,  4131,  3792,  2367,  4813,  3791,  3789,  3848,  2366,  3713,  3847,  4100,
+                                                4809,  3849,  4265,  4228,  3714,  3717,  3715,  3716,  4415,  4723,  206,   1196);
+    protected const ENUM_MULTIMODERAID = array( 4812,  3456,  2159,  4500,  4493,  4722,  4273,  4603,  4987);
+    protected const ENUM_HEROICRAID    = array( 4987,  4812,  4722);
+    protected const ENUM_CLASSS        = array( null,     1,     2,     3,     4,     5,     6,     7,     8,     9,  null,    11,  true, false);
+    protected const ENUM_RACE          = array( null,     1,     2,     3,     4,     5,     6,     7,     8,  null,    10,    11,  true, false);
+    protected const ENUM_PROFESSION    = array( null,   171,   164,   185,   333,   202,   129,   755,   165,   186,   197,  true, false,   356,   182,   773);
 
     // parse the provided request into a usable format
     public function __construct($fromPOST = false, $opts = [])
@@ -942,7 +1053,7 @@ abstract class Filter
 
     public function getExtraCols()
     {
-        return $this->formData['extraCols'];
+        return array_unique($this->formData['extraCols']);
     }
 
     public function getSetCriteria()
@@ -974,7 +1085,8 @@ abstract class Filter
 
             // criteria
             foreach ($this->criteriaIterator() as &$_cr)
-                $this->cndSet[] = $this->createSQLForCriterium($_cr);
+                if ($cnd = $this->createSQLForCriterium($_cr))
+                    $this->cndSet[] = $cnd;
 
             if ($this->cndSet)
                 array_unshift($this->cndSet, empty($this->fiData['v']['ma']) ? 'AND' : 'OR');
@@ -1261,7 +1373,7 @@ abstract class Filter
         foreach ($fields as $n => $f)
         {
             $sub   = [];
-            $parts = array_filter(explode(' ', $string));
+            $parts = $exact ? [$string] : array_filter(explode(' ', $string));
             foreach ($parts as $p)
             {
                 if ($p[0] == '-' && (mb_strlen($p) > 3 || $shortStr))
@@ -1367,9 +1479,9 @@ abstract class Filter
         return $this->modularizeString([$field], (string)$value, $strFlags & STR_MATCH_EXACT, $strFlags & STR_ALLOW_SHORT);
     }
 
-    private function genericNumeric($field, &$value, $op, $castInt)
+    private function genericNumeric($field, &$value, $op, $typeCast)
     {
-        if (!Util::checkNumeric($value, $castInt))
+        if (!Util::checkNumeric($value, $typeCast))
             return null;
 
         if ($this->int2Op($op))
@@ -1416,10 +1528,12 @@ abstract class Filter
                 $result = $this->genericString($gen[1], $cr[2], $gen[2]);
                 break;
             case FILTER_CR_ENUM:
-                if (isset($this->enums[$cr[0]][$cr[1]]))
+                if (!$gen[3] && isset($this->enums[$cr[0]][$cr[1]]))
                     $result = $this->genericEnum($gen[1], $this->enums[$cr[0]][$cr[1]]);
-                else if (intval($cr[1]) != 0)
-                    $result = $this->genericEnum($gen[1], intval($cr[1]));
+                if ($gen[3] && in_array($cr[1], $this->enums[$cr[0]]))
+                    $result = $this->genericEnum($gen[1], $cr[1]);
+                else if ($gen[2] && ($cr[1] == FILTER_ENUM_ANY || $cr[1] == FILTER_ENUM_NONE))
+                    $result = $this->genericEnum($gen[1], $cr[1]);
                 break;
             case FILTER_CR_CALLBACK:
                 $result = $this->{$gen[1]}($cr, $gen[2], $gen[3]);
@@ -1452,7 +1566,23 @@ abstract class Filter
     /* non-generic values and criteria */
     /***********************************/
 
-    abstract protected function createSQLForCriterium(&$cr);
+    protected function createSQLForCriterium(array &$cr) : array
+    {
+        if (!$this->genericFilter)                          // criteria not in use - no error
+            return [];
+
+        if (in_array($cr[0], array_keys($this->genericFilter)))
+            if ($genCr = $this->genericCriterion($cr))
+                return $genCr;
+
+        $this->error = true;
+        trigger_error('Filter::createSQLForCriterium - received unhandled criterium: ["'.$cr[0].'", "'.$cr[1].'", "'.$cr[2].'"]', E_USER_WARNING);
+
+        unset($cr);
+
+        return [];
+    }
+
     abstract protected function createSQLForValues();
 }
 

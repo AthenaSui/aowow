@@ -325,7 +325,8 @@ var mn_objects = [
     [-3,"Hierbas"],
     [-4,"Venas de minerales"],
     [-2,"Misión"],
-    [-6,"Herramientas"]
+    [-6,"Herramientas"],
+    [6,"Trampas"]
 ];
 var mn_quests = [
     [,"Continentes"],
@@ -1449,6 +1450,7 @@ var g_object_types = {
        0: 'Otros',
        9: 'Libro',
        3: 'Contenedore',
+       6: 'Trampa',
     "-5": 'Cofre',
       25: '[Fishing Pool]',
     "-3": 'Hierba',
@@ -2131,13 +2133,12 @@ var g_zones = {
     4987: 'El Sagrario Rubí'
 };
 
-/* todo (high): add translation */
 var g_zone_areas = {
      206: ['Preparación Norndir', 'Ascenso de los Desuelladragones', 'Bancal de Tyr'],
      209: ['El Patio', 'Comedor', 'El Cubil Vacío', 'Observatorio inferior', 'Observatorio superior', 'Cámara de Lord Godfrey', 'El Camino de la Muralla'],
      719: ['La Alberca de Ask\'ar', 'Sagrario Lunar', 'Las Charcas del Olvido'],
      721: ['La Sala de Máquinas', 'Los Dormitorios', 'Aeropuerto', 'Cámara Manitas'],
-     796: ['[Cementerio]', '[Biblioteca]', '[Armería]', '[Catedral]'],
+     796: ['Cementerio', 'Biblioteca', 'Arsenal', 'Catedral'],
     1196: ['Pináculo inferior', 'Pináculo superior'],
     1337: ['Sala de los Guardianes', 'Trono de Khaz\'goroth'],
     1581: ['Las Minas de la Muerte', 'Cala del Acorazado'],
@@ -2190,8 +2191,8 @@ var g_zone_instancetypes = {
     4: 'Campo de batalla',
     5: 'Mazmorra',          // Heroic
     6: 'Arena',
-    7: 'Banda 10-25',             // 10-25
-    8: 'Banda 10-25 Heroico'              // 10-25 Heroic
+    7: 'Banda 10-25',       // 10-25
+    8: 'Banda 10-25 Heroico'// 10-25 Heroic
 };
 
 var g_zone_territories = {
@@ -3177,6 +3178,7 @@ var LANG = {
     tab_weaponskills:        "Habilidades con armas",
     tab_world:               "Mundo",
     tab_zones:               "Zonas",
+    tab_bonusloot:           "Bonus de botín",              // aowow - custom from BONUS_LOOT_LABEL
 
     numberofupvotesreceived_tip: "Número de valoraciones positivas recibidas ",
     deletethisreply_stc:         "Borrar esta respuesta",
@@ -3645,7 +3647,7 @@ var LANG = {
                             [4603, "La Cámara de Archavon"],        [3456, "Naxxramas"],                    [4722, "Prueba del Cruzado"],           [4273, "Ulduar"]
                         ],
         event:          [
-                            [335, "Amor en el aire"],               [424, "Competición de pesca Kalu'ak"],  [398, "Día de los Piratas"],            [141, "El festín del Festival de Invierno"],
+                            [423, "Amor en el aire"],               [424, "Competición de pesca Kalu'ak"],  [398, "Día de los Piratas"],            [141, "El festín del Festival de Invierno"],
                             [374, "Feria de la Luna Negra"],        [327, "Festival Lunar"],                [341, "Festival de Fuego del Solsticio de Verano"],                             [321, "Festival de la Cosecha"],
                             [409, "Festividad de los Muertos"],     [372, "Fiesta de la cerveza"],          [404, "Generosidad del Peregrino"],     [301, "Gran espectáculo de pesca de Tuercespina"],
                             [324, "Halloween"],                     [181, "Jardín Noble"],                  [285, "Llamamiento a las armas: Cuenca de Arathi"],                             [284, "Llamamiento a las armas: Garganta Grito de Guerra"],

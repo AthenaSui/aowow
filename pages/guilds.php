@@ -10,17 +10,25 @@ class GuildsPage extends GenericPage
 {
     use TrProfiler;
 
+    private $filterObj  = null;
+
+    protected $subCat   = '';
+    protected $filter   = [];
+    protected $lvTabs   = [];
+
     protected $type     = Type::GUILD;
 
     protected $tabId    = 1;
     protected $path     = [1, 5, 2];
     protected $tpl      = 'guilds';
-    protected $js       = [[JS_FILE, 'filters.js'], [JS_FILE, 'profile_all.js'], [JS_FILE, 'profile.js']];
+    protected $scripts  = [[SC_JS_FILE, 'js/filters.js'], [SC_JS_FILE, 'js/profile_all.js'], [SC_JS_FILE, 'js/profile.js']];
 
     protected $_get     = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
     public function __construct($pageCall, $pageParam)
     {
+        parent::__construct($pageCall, $pageParam);
+
         if (!CFG_PROFILER_ENABLE)
             $this->error();
 
@@ -39,8 +47,6 @@ class GuildsPage extends GenericPage
             $this->sumSubjects += DB::Characters($idx)->selectCell('SELECT COUNT(*) FROM guild');
         }
 
-        parent::__construct($pageCall, $pageParam);
-
         $this->name   = Lang::profiler('guilds');
         $this->subCat = $pageParam ? '='.$pageParam : '';
     }
@@ -57,7 +63,7 @@ class GuildsPage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=realms&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=realms']);
 
         $conditions = array(
             ['c.deleteInfos_Account', null],
@@ -113,8 +119,12 @@ class GuildsPage extends GenericPage
                 $tabData['_errors'] = 1;
         }
 
-        $this->lvTabs[] = ['profile', $tabData, 'membersCol'];
+        $this->lvTabs[] = [GuildList::$brickFile, $tabData, 'membersCol'];
+    }
 
+    protected function postCache()
+    {
+        // sort for dropdown-menus
         Lang::sort('game', 'cl');
         Lang::sort('game', 'ra');
     }

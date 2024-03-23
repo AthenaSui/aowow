@@ -15,7 +15,7 @@ class EnchantmentsPage extends GenericPage
     protected $path          = [0, 101];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -87,7 +87,7 @@ class EnchantmentsPage extends GenericPage
         if ($this->filterObj->error)
             $tabData['_errors'] = '$1';
 
-        $this->lvTabs[] = ['enchantment', $tabData, 'enchantment'];
+        $this->lvTabs[] = [EnchantmentList::$brickFile, $tabData, 'enchantment'];
     }
 
     protected function generateTitle()

@@ -16,6 +16,7 @@ $lang = array(
         'pl'            => ["années", "mois", "semaines", "jours", "heures", "minutes", "secondes", "millisecondes"],
         'ab'            => ["an",     "mo",   "sem",      "jour",  "h",      "min",     "s",        "ms"]
     ),
+    'lang' => ['anglais', null, 'français', 'allemand', 'chinois', null, 'espagnol', null, 'russe'],
     'main' => array(
         'name'          => "nom",
         'link'          => "Lien",
@@ -99,7 +100,7 @@ $lang = array(
         ),
 
         // article & infobox
-        'englishOnly'   => "Cette page n'est disponible qu'en <b>anglais</b> pour le moment.",
+        'langOnly'   => "Cette page n'est disponible qu'en <b>%s</b> pour le moment.",
 
         // calculators
         'preset'        => "Prédéterminée",
@@ -129,6 +130,7 @@ $lang = array(
         'dateFmtShort'  => "Y-m-d",
         'dateFmtLong'   => "Y-m-d à H:i A",
         'timeAgo'       => 'il y a %s',
+        'nfSeparators'  => [' ', ','],
 
         // error
         'intError'      => "[An internal error occured.]",
@@ -358,6 +360,13 @@ $lang = array(
         'modes'         => [-1 => "Tout", "Standard / Normal 10", "Héroïque / Normal 25", "10 héroïque", "25 héroïque"],
         'expansions'    => ["Classique", "The Burning Crusade", "Wrath of the Lich King"],
         'stats'         => ["Force", "Agilité", "Endurance", "Intelligence", "Esprit"],
+        'timeAbbrev'    => array(
+            '',
+            "%d |4sec:sec;",
+            "%d |4min:min;",
+            "%d |4h:h;",
+            "%d |4jour:jours;"
+        ),
         'sources'       => array(
             "Inconnu",                      "Fabriqué",                     "Butin",                        "JcJ",                          "Quête",                        "Vendeur",
             "Maître",                       "Découverte",                   "Échange d'un code",            "Talent",                       "Débutant",                     "Événement",
@@ -366,8 +375,8 @@ $lang = array(
             "Boutique en jeu"
         ),
         'pvpSources'    => array(
-            null,                           "Saison 1 des combats d'arène", "Saison 2 des combats d'arène", "Saison 3 des combats d'arène", "Saison 4 des combats d'arène",
-            "Saison 5 des combats d'arène", "Saison 6 des combats d'arène", "Saison 7 des combats d'arène", "Saison 8 des combats d'arène", "Tournoi 2009 des combats d'arène"
+             42 => "Saison 1 des combats d'arène",  52 => "Saison 2 des combats d'arène",  71 => "Saison 3 des combats d'arène",  80 => "Saison 4 des combats d'arène",     157 => "Saison 5 des combats d'arène",
+            163 => "Saison 6 des combats d'arène", 167 => "Saison 7 des combats d'arène", 169 => "Saison 8 des combats d'arène", 177 => "Tournoi 2009 des combats d'arène"
         ),
         'languages'     => array(
              1 => "Orc",                     2 => "Darnassien",              3 => "Taurahe",                 6 => "Nain",                    7 => "Commun",                  8 => "Démoniaque",
@@ -377,7 +386,7 @@ $lang = array(
         'gl'            => [null, "Majeur", "Mineur"],
         'si'            => [1 => "Alliance", -1 => "Alliance seulement", 2 => "Horde", -2 => "Horde seulement", 3 => "Les deux"],
         'resistances'   => [null, 'Résistance au Sacré', 'Résistance au Feu', 'Résistance à la Nature', 'Résistance au Givre', 'Résistance à l\'Ombre', 'Résistance aux Arcanes'],
-        'dt'            => [null, "Magie", "Malédiction", "Maladie", "Poison", "Camouflage", "Invisibilité", null, null, "Enrager"],
+        'dt'            => [null, "Magie", "Malédiction", "Maladie", "Poison", "Camouflage", "Invisibilité", "Magie, Malédiction, Maladie, Poison", "Sort (PNJ)", "Enrager"],
         'sc'            => ["Physique", "Sacré", "Feu", "Nature", "Givre", "Ombre", "Arcane"],
         'cl'            => [null, "Guerrier", "Paladin", "Chasseur", "Voleur", "Prêtre", "DeathChevalier de la mort", "Chaman", "Mage", "Démoniste", null, "Druide"],
         'ra'            => [-2 => "Horde", -1 => "Alliance", null, "Humain", "Orc", "Nain", "Elfe de la nuit", "Mort-vivant", "Tauren", "Gnome", "Troll", null, "Elfe de sang", "Draeneï"],
@@ -618,7 +627,7 @@ $lang = array(
             SAI_ACTION_SET_FACTION                        => ['(%1$d)?Set faction of #target# to [faction=%7$d]:Reset faction of #target#;.', null],
             SAI_ACTION_MORPH_TO_ENTRY_OR_MODEL            => ['(%7$d)?Reset apperance.:Take the appearance of;(%1$d)? [npc=%1$d].:;(%2$d)?[model npc=%2$d border=1 float=right][/model]:;', null],
             SAI_ACTION_SOUND                              => ['Play sound(%2$d)? to invoking player:;:[div float=right width=270px][sound=%1$d][/div]', 'Played by environment.'],
-            SAI_ACTION_PLAY_EMOTE                         => ['Emote [emote=%1$d] to #target#.', null],
+            SAI_ACTION_PLAY_EMOTE                         => ['(%1$d)?Emote [emote=%1$d] to #target#.: End Emote.;', null],
             SAI_ACTION_FAIL_QUEST                         => ['Fail [quest=%1$d] for #target#.', null],
             SAI_ACTION_OFFER_QUEST                        => ['(%2$d)?Add [quest=%1$d] to #target#\'s log:Offer [quest=%1$d] to #target#;.', null],
             SAI_ACTION_SET_REACT_STATE                    => ['#target# becomes %7$s.', null],
@@ -629,7 +638,7 @@ $lang = array(
             SAI_ACTION_THREAT_SINGLE_PCT                  => ['Modify #target#\'s threat by %7$d%%.', null],
             SAI_ACTION_THREAT_ALL_PCT                     => ['Modify the threat of all targets by %7$d%%.', null],
             SAI_ACTION_CALL_AREAEXPLOREDOREVENTHAPPENS    => ['Exploration event of [quest=%1$d] is completed for #target#.', null],
-            SAI_ACTION_SET_EMOTE_STATE                    => ['Continuously emote [emote=%1$d] to #target#.', null],
+            SAI_ACTION_SET_EMOTE_STATE                    => ['(%1$d)?Continuously emote [emote=%1$d] to #target#.:End emote state;', null],
             SAI_ACTION_SET_UNIT_FLAG                      => ['Set (%2$d)?UnitFlags2:UnitFlags; %7$s.', null],
             SAI_ACTION_REMOVE_UNIT_FLAG                   => ['Unset (%2$d)?UnitFlags2:UnitFlags; %7$s.', null],
 /* 20*/     SAI_ACTION_AUTO_ATTACK                        => ['(%1$d)?Start:Stop; auto attacking #target#.', null],
@@ -641,7 +650,7 @@ $lang = array(
             SAI_ACTION_CALL_GROUPEVENTHAPPENS             => ['Satisfy objective of [quest=%1$d] for #target#.', null],
             SAI_ACTION_COMBAT_STOP                        => ['End current combat.', null],
             SAI_ACTION_REMOVEAURASFROMSPELL               => ['Remove (%1$d)?all auras:auras of [spell=%1$d]; from #target#.', 'Only own auras'],
-            SAI_ACTION_FOLLOW                             => ['Follow #target#(%1$d)? at %1$dm distance:;(%3$d)? until reaching [npc=%3$d]:;.', '(%7$d)?Angle: %7$.2f°:;(%8$d)? Some form of Quest Credit is given:;'],
+            SAI_ACTION_FOLLOW                             => ['Follow #target#(%1$d)? at %1$dm distance:;(%3$d)? until reaching [npc=%3$d]:;.', '(%7$d)?Angle\u003A %7$.2f°:;(%8$d)? Some form of Quest Credit is given:;'],
 /* 30*/     SAI_ACTION_RANDOM_PHASE                       => ['Pick random Event Phase from %7$s.', null],
             SAI_ACTION_RANDOM_PHASE_RANGE                 => ['Pick random Event Phase between %1$d and %2$d.', null],
             SAI_ACTION_RESET_GOBJECT                      => ['Reset #target#.', null],
@@ -654,7 +663,7 @@ $lang = array(
             SAI_ACTION_CALL_FOR_HELP                      => ['Call for help.', 'Use default help emote'],
 /* 40*/     SAI_ACTION_SET_SHEATH                         => ['Sheath %7$s weapons.', null],
             SAI_ACTION_FORCE_DESPAWN                      => ['Despawn #target#(%1$d)? after %7$s:;(%2$d)? and then respawn after %8$s:;', null],
-            SAI_ACTION_SET_INVINCIBILITY_HP_LEVEL         => ['Become invincable below (%2$d)?%2$d%%:%1$d; HP.', null],
+            SAI_ACTION_SET_INVINCIBILITY_HP_LEVEL         => ['Become inviniable below (%2$d)?%2$d%%:%1$d; HP.', null],
             SAI_ACTION_MOUNT_TO_ENTRY_OR_MODEL            => ['(%7$d)?Dismount.:Mount ;(%1$d)?[npc=%1$d].:;(%2$d)?[model npc=%2$d border=1 float=right][/model]:;', null],
             SAI_ACTION_SET_INGAME_PHASE_MASK              => ['Set visibility of #target# to phase %7$s.', null],
             SAI_ACTION_SET_DATA                           => ['[b]%2$d[/b] is stored in data field #[b]%1$d[/b] of #target#.', null],
@@ -910,12 +919,35 @@ $lang = array(
     ),
     'emote' => array(
         'notFound'      => "[This Emote doesn't exist.]",
-        'self'          => "Vers vous-même",
-        'target'        => "Vers les autres avec une cible",
-        'noTarget'      => "Vers les autres sans cible",
+//      'self'          => "Vers vous-même",
+//      'target'        => "Vers les autres avec une cible",
+//      'noTarget'      => "Vers les autres sans cible",
+        'targeted'      => "[Used with target]",
+        'untargeted'    => "[Used without target]",
         'isAnimated'    => "Utilise une animation",
+        'eventSound'    => "[Event Sound]",
         'aliases'       => "Alias",
         'noText'        => "Cette émote n'a pas de texte.",
+        'noCommand'     => "[This Emote has no /-command. It can not be triggered.]",
+        'flags'         => array(
+            EMOTE_FLAG_ONLY_STANDING       => "Only while standig",
+            EMOTE_FLAG_USE_MOUNT           => "Emote applies to mount",
+            EMOTE_FLAG_NOT_CHANNELING      => "Not while channeling",
+            EMOTE_FLAG_ANIM_TALK           => "Talk anim - talk",
+            EMOTE_FLAG_ANIM_QUESTION       => "Talk anim - question",
+            EMOTE_FLAG_ANIM_EXCLAIM        => "Talk anim - exclamation",
+            EMOTE_FLAG_ANIM_SHOUT          => "Talk anim - shout",
+            EMOTE_FLAG_NOT_SWIMMING        => "Not while swimming",
+            EMOTE_FLAG_ANIM_LAUGH          => "Talk anim - laugh",
+            EMOTE_FLAG_CAN_LIE_ON_GROUND   => "Usable while sleeping or dead",
+            EMOTE_FLAG_NOT_FROM_CLIENT     => "Creature only",
+            EMOTE_FLAG_NOT_CASTING         => "Not while casting",
+            EMOTE_FLAG_END_MOVEMENT        => "Emote ends movement",
+            EMOTE_FLAG_INTERRUPT_ON_ATTACK => "Interrupt on attacking",
+            EMOTE_FLAG_ONLY_STILL          => "Only while still",
+            EMOTE_FLAG_NOT_FLYING          => "Not while flying"
+        ),
+        'state'         => ['[Oneshot]', '[Continuous State]', '[Continuous Emote]']
     ),
     'enchantment' => array(
         'details'       => "En détail",
@@ -933,8 +965,8 @@ $lang = array(
     ),
     'gameObject' => array(
         'notFound'      => "Cette entité n'existe pas.",
-        'cat'           => [0 => "Autre", 9 => "Livres", 3 => "Conteneurs", -5 => "Coffres", 25 => "Bancs de poissons", -3 => "Herbes", -4 => "Filons de minerai", -2 => "Quêtes", -6 => "Outils"],
-        'type'          => [              9 => "Livre",  3 => "Conteneur",  -5 => "Coffre",  25 => "",                  -3 => "Herbe",  -4 => "Filon de minerai",  -2 => "Quête",  -6 => ""],
+        'cat'           => [0 => "Autre", 3 => "Conteneurs", 6 => "Pièges", 9 => "Livres", 25 => "Bancs de poissons", -5 => "Coffres", -3 => "Herbes", -4 => "Filons de minerai", -2 => "Quêtes", -6 => "Outils"],
+        'type'          => [              3 => "Conteneur",  6 => "",       9 => "Livre",  25 => "",                  -5 => "Coffre",  -3 => "Herbe",  -4 => "Filon de minerai",  -2 => "Quête",  -6 => ""],
         'unkPosition'   => "L'emplacement de cette entité est inconnu.",
         'npcLootPH'     => 'Le <b>%s</b> contient les récompenses du combat contre <a href="?npc=%d">%s</a>. Il apparaît après sa mort.',
         'key'           => "Clé",
@@ -1149,6 +1181,7 @@ $lang = array(
         'hcAvailable'   => "Mode héroïque disponible&nbsp;(%d)",
         'numPlayers'    => "Nombre de joueurs",
         'noMap'         => "Il n'y a aucune carte disponible pour cette zone.",
+        'fishingSkill'  => "[25 &ndash; 100% chance to catch a listed fish.]",
         'instanceTypes' => ["Zone",     "Transit", "Donjon",   "Raid",       "Champ de bataille", "Donjon",    "Arène", "Raid", "Raid"],
         'territories'   => ["Alliance", "Horde",   "Contesté", "Sanctuaire", "JcJ",               "JcJ Global"],
         'cat'           => array(
@@ -1445,15 +1478,10 @@ $lang = array(
         '_transfer'     => 'Cet sort sera converti en <a href="?spell=%d" class="q%d icontiny tinyspecial" style="background-image: url('.STATIC_URL.'/images/wow/icons/tiny/%s.gif)">%s</a> si vous transférez en <span class="icon-%s">%s</span>.',
         'currentArea'   => '&lt;current area&gt;',
         'discovered'    => "Appris via une découverte",
-        'ppm'           => "%s déclenchements par minute",
+        'ppm'           => "(%s déclenchements par minute)",
         'procChance'    => "Chance",
         'starter'       => "Sortilège initiaux",
         'trainingCost'  => "Coût d'entraînement",
-        'remaining'     => "%s restantes",
-        'untilCanceled' => "jusqu’à annulation",
-        'castIn'        => "%s s d'incantation",
-        'instantPhys'   => "Incantation immédiate",
-        'instantMagic'  => "Instantanée",
         'channeled'     => "Canalisée",
         'range'         => "%s m de portée",
         'meleeRange'    => "Allonge",
@@ -1467,10 +1495,43 @@ $lang = array(
         'stackGroup'    => "[Stack Group]",
         'linkedWith'    => "[Linked with]",
         '_scaling'      => "[Scaling]",
-        'scaling'       => array(
-            'directSP' => "+%.2f%% de la puissance des sorts directe",        'directAP' => "+%.2f%% de la puissance d'attaque directe",
-            'dotSP'    => "+%.2f%% de la puissance des sorts par tick",       'dotAP'    => "+%.2f%% de la puissance d'attaque par tick"
+        'instantPhys'   => "Instantané",
+        'castTime' => array(
+            "Incantation immédiate",
+            "%.3g sec. d'incantation",
+            "%.3g min d'incantation"
         ),
+        'cooldown' => array(
+            "Recharge instantanée",
+            "%.3g sec. de recharge",                        // "Recharge en cours : %d |4seconde:secondes;";
+            "%.3g min de recharge",                         // "Recharge en cours : %d |4minute:minutes;";
+         // "Recharge en cours : %d |4heure:heures;",
+         // "Recharge en cours : %d |4jour:jours;"
+        ),
+        'duration'      => array(
+            "jusqu’à annulation",
+            "%.2G sec.",
+            "%.2G min",
+            "%.2G h",
+            "%.2G |4jour:jours;"
+        ),
+        'timeRemaining' => array(
+            "",
+            "%d |4seconde restante:secondes restantes;",
+            "%d |4minute restante:minutes restantes;",
+            "%d |4heure restante:heures restantes;",
+            "%d |4jour restant:jours restants;"
+        ),
+        'powerCost'     => array(
+            -2 => ["%d points de vie",     "Points de vie %d, plus %d par sec."     ],
+             0 => ["Mana : %d",            "%d mana, plus %d par sec."              ],
+             1 => ["Rage : %d",            "Rage %d, plus %d par sec."              ],
+             2 => ["Focalisation : %d",    "Focalisation %d, plus %d par sec."      ],
+             3 => ["Énergie : %d",         "Énergie %d, plus %d par sec."           ],
+             6 => ["%d puissance runique", "%d puissance runique, plus %d par sec." ],
+        ),
+        'powerDisplayCost' => ["%d %s", "%d %s, plus %d par seconde"],
+        'powerCostRunes'=> ["%d sang", "%d impie", "%d givre"],
         'powerRunes'    => ["Sang", "Impie", "Givre", "Mort"],
         'powerTypes'    => array(
             // conventional
@@ -1479,6 +1540,10 @@ $lang = array(
             // powerDisplay
               -1 => "Munitions",         -41 => "Pyrite",            -61 => "Pression vapeur",  -101 => "Chaleur",          -121 => "Limon",            -141 => "Puissance de sang",
             -142 => "Courroux"
+        ),
+        'scaling'       => array(
+            'directSP' => "+%.2f%% de la puissance des sorts directe",        'directAP' => "+%.2f%% de la puissance d'attaque directe",
+            'dotSP'    => "+%.2f%% de la puissance des sorts par tick",       'dotAP'    => "+%.2f%% de la puissance d'attaque par tick"
         ),
         'relItems'      => array(
             'base'    => "<small>Montre %s reliés à <b>%s</b></small>",
@@ -1565,7 +1630,7 @@ $lang = array(
             "Calligraphie",                         "Ouverture à partir d'un véhicule",
         ),
         'stealthType'   => ["GENERAL", "TRAP"],
-        'invisibilityType' => [null, "General", null, "Trap", null, null, "Drunk", null, null, null, null, null],
+        'invisibilityType' => ["General", "UNK-1", "UNK-2", "Trap", "UNK-4", "UNK-5", "Drunk", "UNK-7", "UNK-8", "UNK-9", "UNK-10", "UNK-11"],
         'attributes'    => array(                           // index defined by filters
             69 => "Tous les effets de sort sont nuisibles",
             57 => "L'aura ne peut être annulée",
@@ -1625,7 +1690,7 @@ $lang = array(
             89 => "Utilisable sous l'effet de peur",
             65 => "Utilise toute la puissance"
         ),
-        'unkEffect'     => 'Unknown Effect',
+        'unkEffect'     => 'Unknown Effect (%1$d)',
         'effects'       => array(
 /*0-5    */ 'None',                     'Instakill',                'School Damage',            'Dummy',                    'Portal Teleport',          'Teleport Units',
 /*6+     */ 'Apply Aura',               'Environmental Damage',     'Drain Power',              'Drain Health',             'Heal',                     'Bind',
@@ -1656,7 +1721,7 @@ $lang = array(
 /*156+   */ 'Add Socket to Item',       'Create Tradeskill Item',   'Milling',                  'Rename Pet',               null,                       'Change Talent Spec. Count',
 /*162-167*/ 'Activate Talent Spec.',    null,                       'Remove Aura',              null,                       null,                       'Update Player Phase'
         ),
-        'unkAura'       => 'Unknown Aura',
+        'unkAura'       => 'Unknown Aura (%1$d)',
         'auras'         => array(
 /*0-   */   'None',                                 'Bind Sight',                           'Possess',                              'Periodic Damage - Flat',               'Dummy',
 /*5+   */   'Confuse',                              'Charm',                                'Fear',                                 'Periodic Heal',                        'Mod Attack Speed',
@@ -1783,6 +1848,20 @@ $lang = array(
         'uniqueEquipped'=> ["Unique - Equipé", null,          "Unique - Equipé: %s (%d)"],   // ITEM_UNIQUE_EQUIPPABLE, null, ITEM_LIMIT_CATEGORY_MULTIPLE
         'speed'         => "Vitesse",
         'dps'           => "(%.1f dégâts par seconde)",
+        'duration'      => array(
+            '',
+            "Durée : %d sec",
+            "Durée : %d min",
+            "Durée : %d |4heure:heures;",
+            "Durée : %d |4jour:jours;"
+        ),
+        'cooldown'      => array(
+            "(%s de recharge)",
+            "(%d sec. de recharge)",
+            "(%d min de recharge)",
+            "(%d |4heure:heures; de recharge)",
+            "(%d |4jour:jours; de recharge)"
+        ),
         'damage'        => array(                           // *DAMAGE_TEMPLATE*
                             //  basic,                      basic /w school,                                add basic,                              add basic /w school
             'single'    => ["%d Dégâts",                    "%d points de dégâts (%s)",                     "+ %d points de dégâts",                "+ %d points de dégâts (%s)"             ],

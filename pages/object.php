@@ -10,13 +10,16 @@ class ObjectPage extends GenericPage
 {
     use TrDetailPage;
 
+    protected $pageText      = [];
+    protected $relBoss       = null;
+
     protected $type          = Type::OBJECT;
     protected $typeId        = 0;
     protected $tpl           = 'object';
     protected $path          = [0, 5];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'swfobject.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/swfobject.js']];
 
     protected $_get          = ['domain' => ['filter' => FILTER_CALLBACK, 'options' => 'GenericPage::checkDomain']];
 
@@ -36,7 +39,7 @@ class ObjectPage extends GenericPage
         if ($this->subject->error)
             $this->notFound(Lang::game('object'), Lang::gameObject('notFound'));
 
-        $this->name = $this->subject->getField('name', true);
+        $this->name = Lang::unescapeUISequences($this->subject->getField('name', true), Lang::FMT_HTML);
     }
 
     protected function generatePath()
@@ -46,12 +49,12 @@ class ObjectPage extends GenericPage
 
     protected function generateTitle()
     {
-        array_unshift($this->title, $this->name, Util::ucFirst(Lang::game('object')));
+        array_unshift($this->title, Lang::unescapeUISequences($this->subject->getField('name', true), Lang::FMT_RAW), Util::ucFirst(Lang::game('object')));
     }
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=zones&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=zones']);
 
         /***********/
         /* Infobox */
@@ -103,7 +106,7 @@ class ObjectPage extends GenericPage
                 break;
             default:                                            // requires key .. maybe
             {
-                $locks = Lang::getLocks($this->subject->getField('lockId'), $ids, true);
+                $locks = Lang::getLocks($this->subject->getField('lockId'), $ids, true, Lang::FMT_MARKUP);
                 $l = [];
 
                 foreach ($ids as $type => $typeIds)
@@ -129,13 +132,7 @@ class ObjectPage extends GenericPage
             $infobox[] = Lang::gameObject('trap').Lang::main('colon').'[object='.$_.']';
         }
 
-        // trap for
-        $trigger = new GameObjectList(array(['linkedTrap', $this->typeId]));
-        if (!$trigger->error)
-        {
-            $this->extendGlobalData($trigger->getJSGlobals());
-            $infobox[] = Lang::gameObject('triggeredBy').Lang::main('colon').'[object='.$trigger->id.']';
-        }
+        // trap for X (note: moved to lv-tabs)
 
         // SpellFocus
         if ($_ = $this->subject->getField('spellFocusId'))
@@ -213,13 +210,11 @@ class ObjectPage extends GenericPage
         /****************/
 
         // pageText
-        if ($this->pageText = Game::getPageText($next = $this->subject->getField('pageTextId')))
-        {
+        if ($this->pageText = Game::getPageText($this->subject->getField('pageTextId')))
             $this->addScript(
-                [JS_FILE,  'Book.js'],
-                [CSS_FILE, 'Book.css']
+                [SC_JS_FILE,  'js/Book.js'],
+                [SC_CSS_FILE, 'css/Book.css']
             );
-        }
 
         // get spawns and path
         $map = null;
@@ -252,14 +247,14 @@ class ObjectPage extends GenericPage
         $sai = null;
         if ($this->subject->getField('ScriptOrAI') == 'SmartGameObjectAI')
         {
-            $sai = new SmartAI(SAI_SRC_TYPE_OBJECT, $this->typeId, ['name' => $this->name]);
+            $sai = new SmartAI(SAI_SRC_TYPE_OBJECT, $this->typeId, ['name' => $this->subject->getField('name', true)]);
             if (!$sai->prepare())                           // no smartAI found .. check per guid
             {
                 // at least one of many
                 $guids = DB::World()->selectCol('SELECT guid FROM gameobject WHERE id = ?d LIMIT 1', $this->typeId);
                 while ($_ = array_pop($guids))
                 {
-                    $sai = new SmartAI(SAI_SRC_TYPE_OBJECT, -$_, ['name' => $this->name, 'title' => ' [small](for GUID: '.$_.')[/small]']);
+                    $sai = new SmartAI(SAI_SRC_TYPE_OBJECT, -$_, ['name' => $this->subject->getField('name', true), 'title' => ' [small](for GUID: '.$_.')[/small]']);
                     if ($sai->prepare())
                         break;
                 }
@@ -299,7 +294,7 @@ class ObjectPage extends GenericPage
         {
             $this->extendGlobalData($summons->getJSGlobals(GLOBALINFO_SELF | GLOBALINFO_RELATED));
 
-            $this->lvTabs[] = ['spell', array(
+            $this->lvTabs[] = [SpellList::$brickFile, array(
                 'data' => array_values($summons->getListviewData()),
                 'id'   => 'summoned-by',
                 'name' => '$LANG.tab_summonedby'
@@ -318,7 +313,7 @@ class ObjectPage extends GenericPage
                 foreach ($data as $relId => $d)
                     $data[$relId]['trigger'] = array_search($relId, $_);
 
-                $this->lvTabs[] = ['spell', array(
+                $this->lvTabs[] = [SpellList::$brickFile, array(
                     'data'       => array_values($data),
                     'id'         => 'spells',
                     'name'       => '$LANG.tab_spells',
@@ -334,7 +329,7 @@ class ObjectPage extends GenericPage
         {
             $this->extendGlobalData($acvs->getJSGlobals(GLOBALINFO_SELF | GLOBALINFO_RELATED));
 
-            $this->lvTabs[] = ['achievement', array(
+            $this->lvTabs[] = [AchievementList::$brickFile, array(
                 'data' => array_values($acvs->getListviewData()),
                 'id'   => 'criteria-of',
                 'name' => '$LANG.tab_criteriaof'
@@ -360,14 +355,14 @@ class ObjectPage extends GenericPage
             }
 
             if ($_[0])
-                $this->lvTabs[] = ['quest', array(
+                $this->lvTabs[] = [QuestList::$brickFile, array(
                     'data' => array_values($_[0]),
                     'name' => '$LANG.tab_starts',
                     'id'   => 'starts'
                 )];
 
             if ($_[1])
-                $this->lvTabs[] = ['quest', array(
+                $this->lvTabs[] = [QuestList::$brickFile, array(
                     'data' => array_values($_[1]),
                     'name' => '$LANG.tab_ends',
                     'id'   => 'ends'
@@ -382,7 +377,7 @@ class ObjectPage extends GenericPage
             {
                 $this->extendGlobalData($relQuest->getJSGlobals());
 
-                $this->lvTabs[] = ['quest', array(
+                $this->lvTabs[] = [QuestList::$brickFile, array(
                     'data' => array_values($relQuest->getListviewData()),
                     'name' => '$LANG.tab_quests',
                     'id'   => 'quests'
@@ -429,7 +424,7 @@ class ObjectPage extends GenericPage
                 if ($hiddenCols)
                     $tabData['hiddenCols'] = $hiddenCols;
 
-                $this->lvTabs[] = ['item', $tabData];
+                $this->lvTabs[] = [ItemList::$brickFile, $tabData];
             }
         }
 
@@ -478,8 +473,22 @@ class ObjectPage extends GenericPage
                     $tabData['_truncated'] = 1;
                 }
 
-                $this->lvTabs[] = ['spell', $tabData];
+                $this->lvTabs[] = [SpellList::$brickFile, $tabData];
             }
+        }
+
+        // tab: trap for X
+        $trigger = new GameObjectList(array(['linkedTrap', $this->typeId]));
+        if (!$trigger->error)
+        {
+            $this->extendGlobalData($trigger->getJSGlobals());
+
+            $this->lvTabs[] = [GameObjectList::$brickFile, array(
+                'data' => array_values($trigger->getListviewData()),
+                'name' => Lang::gameObject('triggeredBy'),
+                'id'   => 'triggerd-by',
+                'note' => sprintf(Util::$filterResultString, '?objects=6')
+            )];
         }
 
         // tab: Same model as .. whats the fucking point..?
@@ -488,7 +497,7 @@ class ObjectPage extends GenericPage
         {
             $this->extendGlobalData($sameModel->getJSGlobals());
 
-            $this->lvTabs[] = ['object', array(
+            $this->lvTabs[] = [GameObjectList::$brickFile, array(
                 'data' => array_values($sameModel->getListviewData()),
                 'name' => '$LANG.tab_samemodelas',
                 'id'   => 'same-model-as'
@@ -501,7 +510,7 @@ class ObjectPage extends GenericPage
         $power = new StdClass();
         if (!$this->subject->error)
         {
-            $power->{'name_'.User::$localeString}    = $this->subject->getField('name', true);
+            $power->{'name_'.User::$localeString}    = Lang::unescapeUISequences($this->subject->getField('name', true), Lang::FMT_RAW);
             $power->{'tooltip_'.User::$localeString} = $this->subject->renderTooltip();
             $power->map                              = $this->subject->getSpawns(SPAWNINFO_SHORT);
         }

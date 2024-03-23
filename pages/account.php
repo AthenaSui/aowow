@@ -7,9 +7,19 @@ if (!defined('AOWOW_REVISION'))
 // exclude & weightscales are handled as Ajax
 class AccountPage extends GenericPage
 {
+    protected $text      = '';
+    protected $head      = '';
+    protected $token     = '';
+    protected $infobox   = [];
+    protected $resetPass = false;
+    protected $forceTabs = false;
+
     protected $tpl       = 'acc-dashboard';
-    protected $js        = [[JS_FILE, 'user.js'], [JS_FILE, 'profile.js']];
-    protected $css       = [[CSS_FILE, 'Profiler.css']];
+    protected $scripts   = array(
+        [SC_JS_FILE,  'js/user.js'],
+        [SC_JS_FILE,  'js/profile.js'],
+        [SC_CSS_FILE, 'css/Profiler.css']
+    );
     protected $mode      = CACHE_TYPE_NONE;
     protected $category  = null;
     protected $validCats = array(
@@ -34,9 +44,9 @@ class AccountPage extends GenericPage
 
     protected $_post     = array(
         'username'    => ['filter' => FILTER_SANITIZE_SPECIAL_CHARS, 'flags' => FILTER_FLAG_STRIP_AOWOW],
-        'password'    => ['filter' => FILTER_UNSAFE_RAW],
-        'c_password'  => ['filter' => FILTER_UNSAFE_RAW],
-        'token'       => ['filter' => FILTER_UNSAFE_RAW],
+        'password'    => ['filter' => FILTER_CALLBACK, 'options' => 'GenericPage::checkTextLine'],
+        'c_password'  => ['filter' => FILTER_CALLBACK, 'options' => 'GenericPage::checkTextLine'],
+        'token'       => ['filter' => FILTER_SANITIZE_SPECIAL_CHARS, 'flags' => FILTER_FLAG_STRIP_AOWOW],
         'remember_me' => ['filter' => FILTER_CALLBACK, 'options' => 'AccountPage::rememberCallback'],
         'email'       => ['filter' => FILTER_SANITIZE_EMAIL]
     );
@@ -248,7 +258,7 @@ class AccountPage extends GenericPage
         }
 
         // comments
-        if ($_ = CommunityContent::getCommentPreviews(['user' => User::$id, 'replies' => false]))
+        if ($_ = CommunityContent::getCommentPreviews(['user' => User::$id, 'comments' => true]))
         {
             // needs foundCount for params
             // _totalCount: 377,

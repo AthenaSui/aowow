@@ -18,6 +18,14 @@ class SimpleXML extends SimpleXMLElement
 
 trait TrRequestData
 {
+    // const in trait supported in php8.2+
+    public static $PATTERN_TEXT_LINE = '/[\p{Cc}\p{Cf}\p{Co}\p{Cs}\p{Cn}]/ui';
+    public static $PATTERN_TEXT_BLOB = '/[\x00-\x09\x0B-\x1F\p{Cf}\p{Co}\p{Cs}\p{Cn}]/ui';
+
+    protected $_get    = [];                                // fill with variables you that are going to be used; eg:
+    protected $_post   = [];                                // 'id' => ['filter' => FILTER_CALLBACK, 'options' => 'AjaxHandler::checkIdList']
+    protected $_cookie = [];
+
     private $filtered = false;
 
     private function initRequestData() : void
@@ -29,7 +37,7 @@ trait TrRequestData
         // only really relevant for INPUT_POST
         // manuall set everything null in this case
 
-        if (isset($this->_post) && gettype($this->_post) == 'array')
+        if ($this->_post)
         {
             if ($_POST)
                 $this->_post = filter_input_array(INPUT_POST, $this->_post);
@@ -37,7 +45,7 @@ trait TrRequestData
                 $this->_post = array_fill_keys(array_keys($this->_post), null);
         }
 
-        if (isset($this->_get) && gettype($this->_get) == 'array')
+        if ($this->_get)
         {
             if ($_GET)
                 $this->_get = filter_input_array(INPUT_GET, $this->_get);
@@ -45,7 +53,7 @@ trait TrRequestData
                 $this->_get = array_fill_keys(array_keys($this->_get), null);
         }
 
-        if (isset($this->_cookie) && gettype($this->_cookie) == 'array')
+        if ($this->_cookie)
         {
             if ($_COOKIE)
                 $this->_cookie = filter_input_array(INPUT_COOKIE, $this->_cookie);
@@ -61,7 +69,7 @@ trait TrRequestData
         return $val === '';                                 // parameter is expected to be empty
     }
 
-    public static function checkInt(string $val) : int
+    private static function checkInt(string $val) : int
     {
         if (preg_match('/^-?\d+$/', $val))
             return intVal($val);
@@ -109,10 +117,16 @@ trait TrRequestData
         return [];
     }
 
-    private static function checkFulltext(string $val) : string
+    private static function checkTextLine(string $val) : string
     {
         // trim non-printable chars
-        return preg_replace('/[\p{Cf}\p{Co}\p{Cs}\p{Cn}]/ui', '', $val);
+        return preg_replace(self::$PATTERN_TEXT_LINE, '', $val);
+    }
+
+    private static function checkTextBlob(string $val) : string
+    {
+        // trim non-printable chars
+        return preg_replace(self::$PATTERN_TEXT_BLOB, '', $val);
     }
 }
 
@@ -135,6 +149,7 @@ abstract class CLI
     private static $logHandle   = null;
     private static $hasReadline = null;
 
+    private static $overwriteLast = false;
 
     /********************/
     /* formatted output */
@@ -160,7 +175,7 @@ abstract class CLI
                 $nCols = count($row);
 
             for ($j = 0; $j < $nCols - 1; $j++)             // don't pad last column
-                $pads[$j] = max($pads[$j], mb_strlen($row[$j]));
+                $pads[$j] = max($pads[$j] ?? 0, mb_strlen($row[$j]));
         }
         self::write();
 
@@ -203,30 +218,30 @@ abstract class CLI
 
     public static function red(string $str) : string
     {
-        return OS_WIN ? $str : "\e[31m".$str."\e[0m";
+        return CLI_HAS_E ? "\e[31m".$str."\e[0m" : $str;
     }
 
     public static function green(string $str) : string
     {
-        return OS_WIN ? $str : "\e[32m".$str."\e[0m";
+        return CLI_HAS_E ? "\e[32m".$str."\e[0m" : $str;
     }
 
     public static function yellow(string $str) : string
     {
-        return OS_WIN ? $str : "\e[33m".$str."\e[0m";
+        return CLI_HAS_E ? "\e[33m".$str."\e[0m" : $str;
     }
 
     public static function blue(string $str) : string
     {
-        return OS_WIN ? $str : "\e[36m".$str."\e[0m";
+        return CLI_HAS_E ? "\e[36m".$str."\e[0m" : $str;
     }
 
     public static function bold(string $str) : string
     {
-        return OS_WIN ? $str : "\e[1m".$str."\e[0m";
+        return CLI_HAS_E ? "\e[1m".$str."\e[0m" : $str;
     }
 
-    public static function write(string $txt = '', int $lvl = self::LOG_BLANK, bool $timestamp = true) : void
+    public static function write(string $txt = '', int $lvl = self::LOG_BLANK, bool $timestamp = true, bool $tmpRow = false) : void
     {
         $msg = '';
         if ($txt)
@@ -253,15 +268,16 @@ abstract class CLI
                     break;
             }
 
-            $msg .= $txt."\n";
+            $msg .= $txt;
         }
-        else
-            $msg = "\n";
+
+        $msg = (self::$overwriteLast && CLI_HAS_E ? "\e[1G\e[0K" : "\n") . $msg;
+        self::$overwriteLast = $tmpRow;
 
         echo $msg;
 
-        if (self::$logHandle)                               // remove highlights for logging
-            fwrite(self::$logHandle, preg_replace(["/\e\[\d+m/", "/\e\[0m/"], '', $msg));
+        if (self::$logHandle)                               // remove control sequences from log
+            fwrite(self::$logHandle, preg_replace(["/\e\[\d+[mK]/", "/\e\[\d+G/"], ['', "\n"], $msg));
 
         flush();
     }
@@ -411,9 +427,41 @@ abstract class CLI
 }
 
 
+class Timer
+{
+    private $t_cur = 0;
+    private $t_new = 0;
+    private $intv  = 0;
+
+    public function __construct(int $intervall)
+    {
+        $this->intv  = $intervall / 1000;                   // in msec
+        $this->t_cur = microtime(true);
+    }
+
+    public function update() : bool
+    {
+        $this->t_new = microtime(true);
+        if ($this->t_new > $this->t_cur + $this->intv)
+        {
+            $this->t_cur = $this->t_cur + $this->intv;
+            return true;
+        }
+
+        return false;
+    }
+
+    public function reset() : void
+    {
+        $this->t_cur = microtime(true) - $this->intv;
+    }
+}
+
+
 abstract class Util
 {
-    const FILE_ACCESS = 0777;
+    const FILE_ACCESS = 0755;
+    const DIR_ACCESS  = 0777;
 
     const GEM_SCORE_BASE_WOTLK = 16;                        // rare quality wotlk gem score
     const GEM_SCORE_BASE_BC    = 8;                         // rare quality bc gem score
@@ -425,7 +473,7 @@ abstract class Util
     );
 
     public static $subDomains               = array(
-        'www',          null,           'fr',           'de',           'cn',           null,           'es',           null,           'ru'
+        'en',           null,           'fr',           'de',           'cn',           null,           'es',           null,           'ru'
     );
 
     public static $regions                   = array(
@@ -504,7 +552,6 @@ abstract class Util
     );
 
     public static $tcEncoding               = '0zMcmVokRsaqbdrfwihuGINALpTjnyxtgevElBCDFHJKOPQSUWXYZ123456789';
-    public static $wowheadLink              = '';
     private static $notes                   = [];
 
     public static function addNote(int $uGroupMask, string $str) : void
@@ -567,7 +614,7 @@ abstract class Util
         return $money;
     }
 
-    private static function parseTime(int $msec) : array
+    public static function parseTime(int $msec) : array
     {
         $time = [0, 0, 0, 0, 0];
 
@@ -665,13 +712,13 @@ abstract class Util
         else if ($h)                                        // hours, minutes ago
             return Lang::main('timeAgo', [$h . ' ' . Lang::timeUnits('ab', 4) . ' ' . $m . ' ' . Lang::timeUnits('ab', 5)]);
         else if ($m)                                        // minutes, seconds ago
-            return Lang::main('timeAgo', [$m . ' ' . Lang::timeUnits('ab', 5) . ' ' . $m . ' ' . Lang::timeUnits('ab', 6)]);
+            return Lang::main('timeAgo', [$m . ' ' . Lang::timeUnits('ab', 5) . ' ' . $s . ' ' . Lang::timeUnits('ab', 6)]);
         else                                                // seconds ago
             return Lang::main('timeAgo', [$s . ' ' . Lang::timeUnits($s == 1 ? 'sg' : 'pl', 6)]);
     }
 
-    // pageText for Books (Item or GO) and questText
-    public static function parseHtmlText(/*string|array*/ $text, bool $markdown = false) // : /*string|array*/
+    // pageTexts, questTexts and mails
+    public static function parseHtmlText(string|array $text, bool $markdown = false) : string|array
     {
         if (is_array($text))
         {
@@ -701,52 +748,45 @@ abstract class Util
         else
             $text = strtr($text, ["\n" => $markdown ? '[br]' : '<br />', "\r" => '']);
 
+        // escape fake html-ish tags the browser skipsh dishplaying ...<hic>!
+        $text = preg_replace('/<([^\s\/]+)>/iu', '&lt;\1&gt;', $text);
+
         $from = array(
-            '/\|T([\w]+\\\)*([^\.]+)\.blp:\d+\|t/ui',       // images (force size to tiny)                      |T<fullPath>:<size>|t
-            '/\|c(\w{6})\w{2}([^\|]+)\|r/ui',               // color                                            |c<RRGGBBAA><text>|r
-            '/\$g\s*([^:;]+)\s*:\s*([^:;]+)\s*(:?[^:;]*);/ui',// directed gender-reference                      $g:<male>:<female>:<refVariable>
+            '/\$g\s*([^:;]*)\s*:\s*([^:;]*)\s*(:?[^:;]*);/ui',// directed gender-reference                      $g<male>:<female>:<refVariable>
             '/\$t([^;]+);/ui',                              // nonsense, that the client apparently ignores
-            '/\|\d\-?\d?\((\$\w)\)/ui',                     // and another modifier for something russian       |3-6($r)
             '/<([^\"=\/>]+\s[^\"=\/>]+)>/ui',               // emotes (workaround: at least one whitespace and never " or = between brackets)
             '/\$(\d+)w/ui',                                 // worldState(?)-ref found on some pageTexts        $1234w
             '/\$c/i',                                       // class-ref
             '/\$r/i',                                       // race-ref
             '/\$n/i',                                       // name-ref
-            '/\$b/i',                                       // line break
-            '/\|n/i'                                        // what .. the fuck .. another type of line terminator? (only in spanish though)
+            '/\$b/i'                                        // line break
         );
 
         $toMD = array(
-            '[icon name=\2]',
-            '[span color=#\1>\2[/span]',
             '<\1/\2>',
             '',
-            '\1',
             '<\1>',
             '[span class=q0>WorldState #\1[/span]',
             '<'.Lang::game('class').'>',
             '<'.Lang::game('race').'>',
             '<'.Lang::main('name').'>',
-            '[br]',
-            ''
+            '[br]'
         );
 
         $toHTML = array(
-            '<span class="icontiny" style="background-image: url('.STATIC_URL.'/images/wow/icons/tiny/\2.gif)">',
-            '<span style="color: #\1">\2</span>',
             '&lt;\1/\2&gt;',
             '',
-            '\1',
             '&lt;\1&gt;',
             '<span class="q0">WorldState #\1</span>',
             '&lt;'.Lang::game('class').'&gt;',
             '&lt;'.Lang::game('race').'&gt;',
             '&lt;'.Lang::main('name').'&gt;',
-            '<br />',
-            ''
+            '<br />'
         );
 
-        return preg_replace($from, $markdown ? $toMD : $toHTML, $text);
+        $text = preg_replace($from, $markdown ? $toMD : $toHTML, $text);
+
+        return Lang::unescapeUISequences($text, $markdown ? Lang::FMT_MARKUP : Lang::FMT_HTML);
     }
 
     public static function asHex($val) : string
@@ -777,7 +817,7 @@ abstract class Util
             return $data;
         }
 
-        return htmlspecialchars($data, ENT_QUOTES, 'utf-8');
+        return htmlspecialchars($data, ENT_QUOTES | ENT_DISALLOWED | ENT_HTML5, 'utf-8');
     }
 
     public static function jsEscape($data)
@@ -881,7 +921,7 @@ abstract class Util
             if (strstr($v, $domain))
             {
                 User::useLocale($k);
-                Lang::load(User::$localeString);
+                Lang::load($k);
                 return;
             }
         }
@@ -889,7 +929,7 @@ abstract class Util
         if ($domain == 'www')
         {
             User::useLocale(LOCALE_EN);
-            Lang::load(User::$localeString);
+            Lang::load(LOCALE_EN);
         }
     }
 
@@ -997,7 +1037,7 @@ abstract class Util
         return $success;
     }
 
-    public static function createHash($length = 40)         // just some random numbers for unsafe identifictaion purpose
+    public static function createHash($length = 40)         // just some random numbers for unsafe identification purpose
     {
         static $seed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         $hash = '';
@@ -1357,13 +1397,13 @@ abstract class Util
 
         if (is_dir($dir))
         {
-            if (!is_writable($dir) && !@chmod($dir, Util::FILE_ACCESS))
+            if (!is_writable($dir) && !@chmod($dir, Util::DIR_ACCESS))
                 trigger_error('cannot write into directory', E_USER_ERROR);
 
             return is_writable($dir);
         }
 
-        if (@mkdir($dir, Util::FILE_ACCESS, true))
+        if (@mkdir($dir, Util::DIR_ACCESS, true))
             return true;
 
         trigger_error('could not create directory', E_USER_ERROR);
@@ -1974,21 +2014,21 @@ class Report
     {
         if ($mode < 0 || $reason <= 0 || !$subject)
         {
-            trigger_error('AjaxContactus::handleContactUs - malformed contact request received', E_USER_ERROR);
+            trigger_error('Report - malformed contact request received', E_USER_ERROR);
             $this->errorCode = self::ERR_MISCELLANEOUS;
             return;
         }
 
         if (!isset($this->context[$mode][$reason]))
         {
-            trigger_error('AjaxContactus::handleContactUs - report has invalid context (mode:'.$mode.' / reason:'.$reason.')', E_USER_ERROR);
+            trigger_error('Report - report has invalid context (mode:'.$mode.' / reason:'.$reason.')', E_USER_ERROR);
             $this->errorCode = self::ERR_MISCELLANEOUS;
             return;
         }
 
         if (!User::$id && !User::$ip)
         {
-            trigger_error('AjaxContactus::handleContactUs - could not determine IP for anonymous user', E_USER_ERROR);
+            trigger_error('Report - could not determine IP for anonymous user', E_USER_ERROR);
             $this->errorCode = self::ERR_MISCELLANEOUS;
             return;
         }

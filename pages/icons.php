@@ -15,7 +15,7 @@ class IconsPage extends GenericPage
     protected $path          = [0, 31];
     protected $tabId         = 0;
     protected $mode          = CACHE_TYPE_PAGE;
-    protected $js            = [[JS_FILE, 'filters.js']];
+    protected $scripts       = [[SC_JS_FILE, 'js/filters.js']];
 
     protected $_get          = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
@@ -66,7 +66,7 @@ class IconsPage extends GenericPage
         if ($this->filterObj->error)
             $tabData['_errors'] = 1;
 
-        $this->lvTabs[] = ['icongallery', $tabData];
+        $this->lvTabs[] = [IconList::$brickFile, $tabData];
     }
 
     protected function generateTitle()

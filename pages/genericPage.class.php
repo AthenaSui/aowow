@@ -15,6 +15,18 @@ trait TrDetailPage
 
     protected $subject    = null;                           // so it will not get cached
 
+    // template vars
+    protected $extraText  = '';
+    protected $infobox    = [];
+    protected $transfer   = [];                             // faction transfer equivalent data
+    protected $redButtons = [];                             // see template/redButtons.tpl.php
+    protected $smartAI    = null;
+    protected $map        = null;
+    protected $article    = [];
+    protected $headIcons  = [];
+    protected $expansion  = EXP_CLASSIC;
+
+
     protected $contribute = CONTRIBUTE_ANY;
 
     protected function generateCacheKey(bool $withStaff = true) : string
@@ -49,9 +61,11 @@ trait TrDetailPage
 
 trait TrListPage
 {
-    protected $category  = null;
-    protected $filter    = [];
-    protected $lvTabs    = [];                              // most pages have this
+    protected $category   = null;
+    protected $subCat     = '';
+    protected $filter     = [];
+    protected $lvTabs     = [];                             // most pages have this
+    protected $redButtons = [];                             // see template/redButtons.tpl.php
 
     private   $filterObj = null;
 
@@ -175,14 +189,27 @@ class GenericPage
     protected $mode         = CACHE_TYPE_NONE;
  // protected $contribute;                                  // defined in __construct()
 
+    protected $wowheadLink  = 'https://wowhead.com/';
+
     protected $jsGlobals    = [];
     protected $lvData       = [];
     protected $title        = [CFG_NAME];                   // for title-Element
     protected $name         = '';                           // for h1-Element
     protected $tabId        = null;
     protected $gDataKey     = false;                        // adds the dataKey to the user vars
-    protected $js           = [];
-    protected $css          = [];
+    protected $scripts      = array(
+        [SC_JS_FILE,  'js/jquery-3.7.0.min.js',  SC_FLAG_NO_TIMESTAMP                        ],
+        [SC_JS_FILE,  'js/basic.js'                                                          ],
+        [SC_JS_FILE,  'widgets/power.js',        SC_FLAG_NO_TIMESTAMP | SC_FLAG_APPEND_LOCALE],
+        [SC_JS_FILE,  'js/locale_%s.js',         SC_FLAG_LOCALIZED                           ],
+        [SC_JS_FILE,  'js/global.js'                                                         ],
+        [SC_JS_FILE,  'js/locale.js'                                                         ],
+        [SC_JS_FILE,  'js/Markup.js'                                                         ],
+        [SC_CSS_FILE, 'css/basic.css'                                                        ],
+        [SC_CSS_FILE, 'css/global.css'                                                       ],
+        [SC_CSS_FILE, 'css/aowow.css'                                                        ],
+        [SC_CSS_FILE, 'css/locale_%s.css',       SC_FLAG_LOCALIZED                           ]
+    );
 
     // private vars don't get cached
     private   $time         = 0;
@@ -198,6 +225,8 @@ class GenericPage
     private   $memcached    = null;
     private   $mysql        = ['time' => 0, 'count' => 0];
 
+    private   $js           = [];
+    private   $css          = [];
     private   $headerLogo   = '';
     private   $fullParams   = '';
 
@@ -207,7 +236,7 @@ class GenericPage
         'calendar'          => ['template' => 'holidaycal',        'id' => 'calendar',        'parent' => 'lv-generic', 'data' => [], 'name' => '$LANG.tab_calendar'      ],
         'class'             => ['template' => 'classs',            'id' => 'classes',         'parent' => 'lv-generic', 'data' => [], 'name' => '$LANG.tab_classes'       ],
         'commentpreview'    => ['template' => 'commentpreview',    'id' => 'comments',        'parent' => 'lv-generic', 'data' => [], 'name' => '$LANG.tab_comments'      ],
-        'creature'          => ['template' => 'npc',               'id' => 'npcs',            'parent' => 'lv-generic', 'data' => [], 'name' => '$LANG.tab_npcs'          ],
+        'npc'               => ['template' => 'npc',               'id' => 'npcs',            'parent' => 'lv-generic', 'data' => [], 'name' => '$LANG.tab_npcs'          ],
         'currency'          => ['template' => 'currency',          'id' => 'currencies',      'parent' => 'lv-generic', 'data' => [], 'name' => '$LANG.tab_currencies'    ],
         'emote'             => ['template' => 'emote',             'id' => 'emotes',          'parent' => 'lv-generic', 'data' => []                                      ],
         'enchantment'       => ['template' => 'enchantment',       'id' => 'enchantments',    'parent' => 'lv-generic', 'data' => []                                      ],
@@ -264,6 +293,16 @@ class GenericPage
                 $this->skipCache = CACHE_MODE_FILECACHE | CACHE_MODE_MEMCACHED;
         }
 
+        // prep js+css includes
+        $parentVars = get_class_vars(__CLASS__);
+        if ($parentVars['scripts'] != $this->scripts)       // additions set in child class
+            $this->scripts = array_merge($parentVars['scripts'], $this->scripts);
+
+        $this->addScript(...$this->scripts);
+
+        if (User::isInGroup(U_GROUP_STAFF | U_GROUP_SCREENSHOT | U_GROUP_VIDEO))
+            $this->addScript([SC_CSS_FILE, 'css/staff.css'], [SC_JS_FILE,  'js/staff.js']);
+
         // display modes
         if (isset($_GET['power']) && method_exists($this, 'generateTooltip'))
             $this->mode = CACHE_TYPE_TOOLTIP;
@@ -278,6 +317,8 @@ class GenericPage
             $this->gUser      = User::getUserGlobals();
             $this->gFavorites = User::getFavorites();
             $this->pageTemplate['pageName'] = strtolower($pageCall);
+
+            $this->wowheadLink = sprintf(WOWHEAD_LINK, Util::$subDomains[User::$localeId], $pageCall, $pageParam);
 
             if (!$this->isValidPage())
                 $this->error();
@@ -437,33 +478,59 @@ class GenericPage
 
     public function addScript(array ...$structs) : void
     {
-        foreach ($structs as $s)                            // iType, sContent, bFront, sIeCnd
+        array_walk($structs, function(&$x) { $x = array_pad($x, 3, 0); });
+
+        foreach ($structs as [$type, $str, $flags])
         {
-            if (empty($s[1]))
+            if (empty($str))
             {
                 trigger_error('GenericPage::addScript - content empty', E_USER_WARNING);
                 continue;
             }
 
-            $s = array_pad($s, 4, '');
-            switch ($s[0])
+            $dynData = strpos($str, '?data=') === 0;
+            $app = [];
+
+            // insert locale string
+            if ($flags & SC_FLAG_LOCALIZED)
+                $str = sprintf($str, User::$localeString);
+
+            if ($dynData)
             {
-                case JS_FILE:
-                case JS_STRING:
-                    if (empty($s[2]))
-                        $this->js[] = $s;
+                $app[] = 'locale='.User::$localeId;
+                $app[] = 't='.$_SESSION['dataKey'];
+            }
+            else if (($flags & SC_FLAG_APPEND_LOCALE) && User::$localeId)
+                $app[] = 'lang='.Util::$subDomains[User::$localeId];
+
+            // append anti-cache timestamp
+            if (!($flags & SC_FLAG_NO_TIMESTAMP) && !$dynData)
+                if ($type == SC_JS_FILE || $type == SC_CSS_FILE)
+                    $app[] = filemtime('static/'.$str) ?: 0;
+
+            if ($app)
+                $str .= ($dynData ? '&' : '?').implode('&', $app);
+
+            switch ($type)
+            {
+                case SC_JS_FILE:
+                    $str = ($dynData ? HOST_URL : STATIC_URL).'/'.$str;
+                case SC_JS_STRING:
+                    if ($flags & SC_FLAG_PREFIX)
+                        array_unshift($this->js, [$type, $str]);
                     else
-                        array_unshift($this->js, $s);
+                        $this->js[] = [$type, $str];
                     break;
-                case CSS_FILE:
-                case CSS_STRING:
-                    if (empty($s[2]))
-                        $this->css[] = $s;
+                case SC_CSS_FILE:
+                    $str = STATIC_URL.'/'.$str;
+                case SC_CSS_STRING:
+                    if ($flags & SC_FLAG_PREFIX)
+                        array_unshift($this->css, [$type, $str]);
                     else
-                        array_unshift($this->css, $s);
+                        $this->css[] = [$type, $str];
                     break;
                 default:
-                    trigger_error('GenericPage::addScript - unknown script type #'.$s[0], E_USER_WARNING);
+                    trigger_error('GenericPage::addScript - unknown script type #'.$type, E_USER_WARNING);
             }
         }
     }
@@ -501,13 +568,13 @@ class GenericPage
                 $this->article['params']['dbpage'] = true;
 
             // convert U_GROUP_* to MARKUP.CLASS_* (as seen in js-object Markup)
-            if($article['editAccess'] & (U_GROUP_ADMIN | U_GROUP_VIP | U_GROUP_DEV))
+            if ($article['editAccess'] & (U_GROUP_ADMIN | U_GROUP_VIP | U_GROUP_DEV))
                 $this->article['params']['allow'] = '$Markup.CLASS_ADMIN';
-            else if($article['editAccess'] & U_GROUP_STAFF)
+            else if ($article['editAccess'] & U_GROUP_STAFF)
                 $this->article['params']['allow'] = '$Markup.CLASS_STAFF';
-            else if($article['editAccess'] & U_GROUP_PREMIUM)
+            else if ($article['editAccess'] & U_GROUP_PREMIUM)
                 $this->article['params']['allow'] = '$Markup.CLASS_PREMIUM';
-            else if($article['editAccess'] & U_GROUP_PENDING)
+            else if ($article['editAccess'] & U_GROUP_PENDING)
                 $this->article['params']['allow'] = '$Markup.CLASS_PENDING';
             else
                 $this->article['params']['allow'] = '$Markup.CLASS_USER';
@@ -518,15 +585,15 @@ class GenericPage
                 $this->infobox = $article['quickInfo'];
 
             if ($article['locale'] != User::$localeId)
-                $this->article['params']['prepend'] = '<div class="notice-box"><span class="icon-bubble">'.Lang::main('englishOnly').'</span></div>';
+                $this->article['params']['prepend'] = '<div class="notice-box"><span class="icon-bubble">'.Lang::main('langOnly', [Lang::lang($article['locale'])]).'</span></div>';
 
             if (method_exists($this, 'postArticle'))        // e.g. update variables in article
-                $this->postArticle();
+                $this->postArticle($this->article['text']);
         }
     }
 
     // get announcements and notes for user
-    private function addAnnouncements() : void
+    private function addAnnouncements(bool $pagespecific = true) : void
     {
         if (!isset($this->announcements))
             $this->announcements = [];
@@ -550,7 +617,7 @@ class GenericPage
         // fetch announcements
         if ($this->pageTemplate['pageName'])
         {
-            $ann = DB::Aowow()->Select('SELECT ABS(id) AS ARRAY_KEY, a.* FROM ?_announcements a WHERE status = 1 AND (page = ? OR page = "*") AND (groupMask = 0 OR groupMask & ?d)', $this->pageTemplate['pageName'], User::$groups);
+            $ann = DB::Aowow()->Select('SELECT ABS(id) AS ARRAY_KEY, a.* FROM ?_announcements a WHERE status = 1 AND (page = ? OR page = "*") AND (groupMask = 0 OR groupMask & ?d)', $pagespecific ? $this->pageTemplate['pageName'] : '', User::$groups);
             foreach ($ann as $k => $v)
             {
                 if ($t = Util::localizedString($v, 'text'))
@@ -691,7 +758,7 @@ class GenericPage
 
             if ($override)
             {
-                $this->addAnnouncements();
+                $this->addAnnouncements(false);
 
                 include('template/pages/'.$override.'.tpl.php');
                 die();
@@ -707,6 +774,9 @@ class GenericPage
                 }
 
                 $this->addAnnouncements();
+
+                if (isset($this->lvTabs))
+                    array_walk($this->lvTabs, function (&$x) { $x = array_pad($x, 3, null); });
 
                 include('template/pages/'.$this->tpl.'.tpl.php');
                 die();

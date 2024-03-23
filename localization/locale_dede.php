@@ -16,6 +16,7 @@ $lang = array(
         'pl'            => ["Jahre", "Monate", "Wochen", "Tage",  "Stunden", "Minuten", "Sekunden", "Millisekunden"],
         'ab'            => ["J.",    "M.",     "W.",     "Tag",   "Std.",    "Min.",    "Sek.",     "Ms."]
     ),
+    'lang' => ['Englisch', null, 'Französisch', 'Deutsch', 'Chinesisch', null, 'Spanisch', null, 'Russisch'],
     'main' => array(
         'name'          => "Name",
         'link'          => "Link",
@@ -99,7 +100,7 @@ $lang = array(
         ),
 
         // article & infobox
-        'englishOnly'   => "Diese Seite ist nur in <b>Englisch</b> verfügbar.",
+        'langOnly'   => "Diese Seite ist nur in <b>%s</b> verfügbar.",
 
         // calculators
         'preset'        => "Vorlage",
@@ -129,6 +130,7 @@ $lang = array(
         'dateFmtShort'  => "d.m.Y",
         'dateFmtLong'   => "d.m.Y \u\m H:i",
         'timeAgo'       => 'vor %s',
+        'nfSeparators'  => ['.', ','],
 
         // error
         'intError'      => "Ein interner Fehler ist aufgetreten.",
@@ -296,7 +298,7 @@ $lang = array(
         'achievements'  => "Erfolge",
         'title'         => "Titel",                         // 11
         'titles'        => "Titel",
-        'event'         => "Weltereigniss",                 // 12
+        'event'         => "Weltereignis",                  // 12
         'events'        => "Weltereignisse",
         'class'         => "Klasse",                        // 13
         'classes'       => "Klassen",
@@ -358,6 +360,13 @@ $lang = array(
         'modes'         => [-1 => "Beliebig", "Normal / Normal 10", "Heroisch / Normal 25", "Heroisch 10", "Heroisch 25"],
         'expansions'    => ["Classic", "The Burning Crusade", "Wrath of the Lich King"],
         'stats'         => ["Stärke", "Beweglichkeit", "Ausdauer", "Intelligenz", "Willenskraft"],
+        'timeAbbrev'    => array(
+            '',
+            "%d |4Sek.:Sek.;",
+            "%d |4Min.:Min.;",
+            "%d |4Std.:Std.;",
+            "%d |4Tag:Tage;"
+        ),
         'sources'       => array(
             "Unbekannt",                    "Hergestellt",                  "Drop",                         "PvP",                          "Quest",                        "Händler",
             "Lehrer",                       "Entdeckung",                   "Einlösung",                    "Talent",                       "Startausrüstung",              "Ereignis",
@@ -366,8 +375,8 @@ $lang = array(
             "In-Game-Store"
         ),
         'pvpSources'    => array(
-            null,                           "Arenasaison 1",                "Arenasaison 2",                "Arenasaison 3",                "Arenasaison 4",
-            "Arenasaison 5",                "Arenasaison 6",                "Arenasaison 7",                "Arenasaison 8",                "2009 Arena-Turnier"
+             42 => "Arenasaison 1",          52 => "Arenasaison 2",          71 => "Arenasaison 3",          80 => "Arenasaison 4",         157 => "Arenasaison 5",
+            163 => "Arenasaison 6",         167 => "Arenasaison 7",         169 => "Arenasaison 8",         177 => "2009 Arena-Turnier"
         ),
         'languages'     => array(
              1 => "Orcisch",                 2 => "Darnassisch",             3 => "Taurisch",                6 => "Zwergisch",               7 => "Gemeinsprache",           8 => "Dämonisch",
@@ -378,7 +387,7 @@ $lang = array(
         'si'            => [1 => "Allianz", -1 => "Nur für Allianz", 2 => "Horde", -2 => "Nur für Horde", 3 => "Beide"],
         'resistances'   => [null, 'Heiligwiderstand', 'Feuerwiderstand', 'Naturwiderstand', 'Frostwiderstand', 'Schattenwiderstand', 'Arkanwiderstand'],
         'sc'            => ["Körperlich", "Heilig", "Feuer", "Natur", "Frost", "Schatten", "Arkan"],
-        'dt'            => [null, "Magie", "Fluch", "Krankheit", "Gift", "Verstohlenheit", "Unsichtbarkeit", null, null, "Wut"],
+        'dt'            => [null, "Magie", "Fluch", "Krankheit", "Gift", "Verstohlenheit", "Unsichtbarkeit", "Magie, Fluch, Krankheit, Gift", "Zauber (NSC)", "Wut"],
         'cl'            => [null, "Krieger", "Paladin", "Jäger", "Schurke", "Priester", "Todesritter", "Schamane", "Magier", "Hexenmeister", null, "Druide"],
         'ra'            => [-2 => "Horde", -1 => "Allianz", null, "Mensch", "Orc", "Zwerg", "Nachtelf", "Untoter", "Tauren", "Gnom", "Troll", null, "Blutelf", "Draenei"],
         'rep'           => ["Hasserfüllt", "Feindselig", "Unfreundlich", "Neutral", "Freundlich", "Wohlwollend", "Respektvoll", "Ehrfürchtig"],
@@ -618,7 +627,7 @@ $lang = array(
             SAI_ACTION_SET_FACTION                        => ['Setze Fraktion von #target# (%1$d)?auf [faction=%7$d]:zurück;.', null],
             SAI_ACTION_MORPH_TO_ENTRY_OR_MODEL            => ['(%7$d)?Setze Aussehen zurück.:Nimm folgendes Erscheinungsbild an:;(%1$d)? [npc=%1$d]:;(%2$d)?[model npc=%2$d border=1 float=right][/model]:;', null],
             SAI_ACTION_SOUND                              => ['Spiele Audio(%2$d)? für auslösenden Spieler:;:[div float=right width=270px][sound=%1$d][/div]', 'Abgespielt durch Welt.'],
-            SAI_ACTION_PLAY_EMOTE                         => ['Emote [emote=%1$d] zu #target#.', null],
+            SAI_ACTION_PLAY_EMOTE                         => ['(%1$d)?Emote [emote=%1$d] zu #target#.:Beende Emote;', null],
             SAI_ACTION_FAIL_QUEST                         => ['[quest=%1$d] von #target# schlägt fehl.', null],
             SAI_ACTION_OFFER_QUEST                        => ['(%2$d)?Füge [quest=%1$d] dem Log von #target# hinzu:Biete [quest=%1$d] #target# an;.', null],
             SAI_ACTION_SET_REACT_STATE                    => ['#target# wird %7$s.', null],
@@ -629,7 +638,7 @@ $lang = array(
             SAI_ACTION_THREAT_SINGLE_PCT                  => ['Ändere Bedrohung von #target# um %7$d%%.', null],
             SAI_ACTION_THREAT_ALL_PCT                     => ['Ändere Bedrohung aller Ziele um %7$d%%.', null],
             SAI_ACTION_CALL_AREAEXPLOREDOREVENTHAPPENS    => ['Erfülle Entdeckungsereignis von [quest=%1$d] für #target#.', null],
-            SAI_ACTION_SET_EMOTE_STATE                    => ['Emote [emote=%1$d] kontinuierlich zu #target#.', null],
+            SAI_ACTION_SET_EMOTE_STATE                    => ['(%1$d)?Emote [emote=%1$d] kontinuierlich zu #target#:Beende Emote.;', null],
             SAI_ACTION_SET_UNIT_FLAG                      => ['Setze (%2$d)?UnitFlags2:UnitFlags; %7$s.', null],
             SAI_ACTION_REMOVE_UNIT_FLAG                   => ['Setze (%2$d)?UnitFlags2:UnitFlags; %7$s zurück.', null],
 /* 20*/     SAI_ACTION_AUTO_ATTACK                        => ['(%1$d)?Beginne:Beende; automatische Angriffe gegen #target#.', null],
@@ -641,7 +650,7 @@ $lang = array(
             SAI_ACTION_CALL_GROUPEVENTHAPPENS             => ['Erfülle Ziel von [quest=%1$d] für #target#.', null],
             SAI_ACTION_COMBAT_STOP                        => ['Beende aktuellen Kampf.', null],
             SAI_ACTION_REMOVEAURASFROMSPELL               => ['Entferne (%1$d)?alle Auren:Aura [spell=%1$d]; von #target#.', 'Nur eigene Auren'],
-            SAI_ACTION_FOLLOW                             => ['Folge #target#(%1$d)? mit %1$dm Abstand:;(%3$d)? bis zum Erreichen von [npc=%3$d]:;.', '(%7$d)?Winkel: %7$.2f°:;(%8$d)? Eine Form von Questziel wird erfüllt:;'],
+            SAI_ACTION_FOLLOW                             => ['Folge #target#(%1$d)? mit %1$dm Abstand:;(%3$d)? bis zum Erreichen von [npc=%3$d]:;.', '(%7$d)?Winkel\u003A %7$.2f°:;(%8$d)? Eine Form von Questziel wird erfüllt:;'],
 /* 30*/     SAI_ACTION_RANDOM_PHASE                       => ['Wähle zufällige Ereignisphase aus %7$s.', null],
             SAI_ACTION_RANDOM_PHASE_RANGE                 => ['Wähle zufällige Ereignisphase zwischen %1$d und %2$d.', null],
             SAI_ACTION_RESET_GOBJECT                      => ['Setze #target# zurück.', null],
@@ -910,12 +919,35 @@ $lang = array(
     ),
     'emote' => array(
         'notFound'      => "Dieses Emote existiert nicht.",
-        'self'          => "An Euch selbst",
-        'target'        => "An Andere mit Ziel",
-        'noTarget'      => "An Andere ohne Ziel",
+//      'self'          => "An Euch selbst",
+//      'target'        => "An Andere mit Ziel",
+//      'noTarget'      => "An Andere ohne Ziel",
+        'targeted'      => "Benutzt mit Ziel",
+        'untargeted'    => "Benutzt ohne Ziel",
         'isAnimated'    => "Besitzt eine Animation",
+        'eventSound'    => "Ereignis-Klang",
         'aliases'       => "Aliasse",
         'noText'        => "Dieses Emote besitzt keinen Text.",
+        'noCommand'     => "Dieses Emote besitzt keinen /-Befehl. Es kann nicht benutzt werden.",
+        'flags'         => array(
+            EMOTE_FLAG_ONLY_STANDING       => "Nur im stehen",
+            EMOTE_FLAG_USE_MOUNT           => "Emote benutzt das Reittier",
+            EMOTE_FLAG_NOT_CHANNELING      => "Nicht beim kanalisieren",
+            EMOTE_FLAG_ANIM_TALK           => "Talk anim - Reden",
+            EMOTE_FLAG_ANIM_QUESTION       => "Talk anim - Fragen",
+            EMOTE_FLAG_ANIM_EXCLAIM        => "Talk anim - Ausrufen",
+            EMOTE_FLAG_ANIM_SHOUT          => "Talk anim - Schreien",
+            EMOTE_FLAG_NOT_SWIMMING        => "Nicht beim schwimmen",
+            EMOTE_FLAG_ANIM_LAUGH          => "Talk anim - Lachen",
+            EMOTE_FLAG_CAN_LIE_ON_GROUND   => "Nutzbar im Schlaf/Tot",
+            EMOTE_FLAG_NOT_FROM_CLIENT     => "Nur für Kreaturen",
+            EMOTE_FLAG_NOT_CASTING         => "Nicht beim Zaubern",
+            EMOTE_FLAG_END_MOVEMENT        => "Emote endet Bewegung",
+            EMOTE_FLAG_INTERRUPT_ON_ATTACK => "Unerbrochen durch Kampf",
+            EMOTE_FLAG_ONLY_STILL          => "Nur in Ruhe",
+            EMOTE_FLAG_NOT_FLYING          => "Nicht im Flug"
+        ),
+        'state'         => ['Einmalig', 'Stetiger Zustand', 'Stetiges Emote']
     ),
     'enchantment' => array(
         'details'       => "Details",
@@ -933,8 +965,8 @@ $lang = array(
     ),
     'gameObject' => array(
         'notFound'      => "Dieses Objekt existiert nicht.",
-        'cat'           => [0 => "Anderes", 9 => "Bücher", 3 => "Behälter", -5 => "Truhen", 25 => "Fischschwärme", -3 => "Kräuter", -4 => "Erzadern",     -2 => "Quest", -6 => "Werkzeuge"],
-        'type'          => [                9 => "Buch",   3 => "Behälter", -5 => "Truhe",  25 => "",              -3 => "Kraut",   -4 => "Erzvorkommen", -2 => "Quest", -6 => ""],
+        'cat'           => [0 => "Anderes", 3 => "Behälter", 6 => "Fallen", 9 => "Bücher", 25 => "Fischschwärme", -5 => "Truhen", -3 => "Kräuter", -4 => "Erzadern",     -2 => "Quest", -6 => "Werkzeuge"],
+        'type'          => [                3 => "Behälter", 6 => "",       9 => "Buch",   25 => "",              -5 => "Truhe",  -3 => "Kraut",   -4 => "Erzvorkommen", -2 => "Quest", -6 => ""],
         'unkPosition'   => "Der Standort dieses Objekts ist nicht bekannt.",
         'npcLootPH'     => 'Der Behälter <b>%s</b> beinhaltet die Beute vom Kampf gegen <a href="?npc=%d">%s</a>. Er erscheint nach seinem Tod.',
         'key'           => "Schlüssel",
@@ -1149,6 +1181,7 @@ $lang = array(
         'hcAvailable'   => "Heroischer Modus verfügbar&nbsp;(%d)",
         'numPlayers'    => "Anzahl an Spielern",
         'noMap'         => "Für dieses Gebiet steht keine Karte zur Verfügung.",
+        'fishingSkill'  => "25 &ndash; 100% Chance einen gelisteten Fisch zu fangen.",
         'instanceTypes' => ["Zone",    "Durchgang", "Dungeon",  "Schlachtzug",     "Battleground", "Dungeon", "Arena", "Schlachtzug", "Schlachtzug"],
         'territories'   => ["Allianz", "Horde",     "Umkämpft", "Sicheres Gebiet", "PvP",          "Welt-PvP"],
         'cat'           => array(
@@ -1445,15 +1478,10 @@ $lang = array(
         '_transfer'     => 'Dieser Zauber wird mit <a href="?spell=%d" class="q%d icontiny tinyspecial" style="background-image: url('.STATIC_URL.'/images/wow/icons/tiny/%s.gif)">%s</a> vertauscht, wenn Ihr zur <span class="icon-%s">%s</span> wechselt.',
         'currentArea'   => '&lt;Momentanes Gebiet&gt;',
         'discovered'    => "Durch Geistesblitz erlernt",
-        'ppm'           => "%s Auslösungen pro Minute",
+        'ppm'           => "(%s Auslösungen pro Minute)",
         'procChance'    => "Procchance",
         'starter'       => "Basiszauber",
         'trainingCost'  => "Trainingskosten",
-        'remaining'     => "Noch %s",
-        'untilCanceled' => "bis Abbruch",
-        'castIn'        => "Wirken in %s Sek.",
-        'instantPhys'   => "Sofort",
-        'instantMagic'  => "Spontanzauber",
         'channeled'     => "Kanalisiert",
         'range'         => "%s Meter Reichweite",
         'meleeRange'    => "Nahkampfreichweite",
@@ -1467,10 +1495,43 @@ $lang = array(
         'stackGroup'    => "Stack Gruppierung",
         'linkedWith'    => "Verknüpft mit",
         '_scaling'      => "Skalierung",
-        'scaling'       => array(
-            'directSP' => "+%.2f%% der Zaubermacht zum direkten Effekt",         'directAP' => "+%.2f%% der Angriffskraft zum direkten Effekt",
-            'dotSP'    => "+%.2f%% der Zaubermacht pro Tick",                    'dotAP'    => "+%.2f%% der Angriffskraft pro Tick"
+        'instantPhys'   => "Sofort",
+        'castTime' => array(
+            "Spontanzauber",
+            "Wirken in %.3g Sek.",
+            "Wirken in %.3g Min."
         ),
+        'cooldown' => array(
+            "Keine Abklingzeit",
+            "%.3g Sek. Abklingzeit",
+            "%.3g Min. Abklingzeit",
+         // "%.3g |4Stunde:Stunden; Abklingzeit",
+         // "%.3g |4Tag:Tage; Abklingzeit"
+        ),
+        'duration'      => array(
+            "bis Abbruch",
+            "%.2G Sek.",
+            "%.2G Min.",
+            "%.2G |4Stunde:Stunden;",
+            "%.2G |4Tag:Tage;"
+        ),
+        'timeRemaining' => array(
+            "",
+            "Noch %d |4Sekunde:Sekunden;",
+            "Noch %d |4Minute:Minuten;",
+            "Noch %d |4Stunde:Stunden;",
+            "Noch %d |4Tag:Tage;"
+        ),
+        'powerCost'     => array(
+           -2 => ["%d Gesundheit", '%1$d Gesundheit und %2$d pro Sek.'],
+            0 => ["%d Mana",       '%1$d Mana und %2$d pro Sek.'      ],
+            1 => ["%d Wut",        '%1$d Wut und %2$d pro Sek.'       ],
+            2 => ["%d Fokus",      "%d Fokus und %d pro Sek."         ],
+            3 => ["%d Energie",    "%d Energie und %d pro Sek."       ],
+            6 => ["%d Runenmacht", "%d Runenmacht, plus %d pro Sek."  ],
+        ),
+        'powerDisplayCost' => ["%d %s", "%d %s, plus %d pro Sek"],
+        'powerCostRunes'=> ["%d Blut", "%d Unheilig", "%d Frost"],
         'powerRunes'    => ["Blut", "Unheilig", "Frost", "Tod"],
         'powerTypes'    => array(
             // conventional
@@ -1479,6 +1540,10 @@ $lang = array(
             // powerDisplay
               -1 => "Munition",          -41 => "Pyrit",             -61 => "Dampfdruck",       -101 => "Hitze",            -121 => "Schlamm",          -141 => "Blutmacht",
             -142 => "Wrath"
+        ),
+        'scaling'       => array(
+            'directSP' => "+%.2f%% der Zaubermacht zum direkten Effekt",         'directAP' => "+%.2f%% der Angriffskraft zum direkten Effekt",
+            'dotSP'    => "+%.2f%% der Zaubermacht pro Tick",                    'dotAP'    => "+%.2f%% der Angriffskraft pro Tick"
         ),
         'relItems'      => array(
             'base'    => "<small>%s im Zusammenhang mit <b>%s</b> anzeigen</small>",
@@ -1545,7 +1610,7 @@ $lang = array(
             "Schaden",                              "Dauer",                                "Bedrohung",                            "Effekt 1",                             "Aufladungen",
             "Reichweite",                           "Radius",                               "kritische Trefferchance",              "Alle Effekte",                         "Zauberzeitverlust",
             "Zauberzeit",                           "Abklingzeit",                          "Effekt 2",                             "Ignoriere Rüstung",                    "Kosten",
-            "Kritischer Bonusschaden",              "Chance auf Fehlschlag",                "Sprung-Ziele",                         "Chance auf Auslösung",                 "Intervall",
+            "Kritischer Bonusschaden",              "Trefferchance",                        "Sprung-Ziele",                         "Chance auf Auslösung",                 "Intervall",
             "Multiplikator (Schaden)",              "Globale Abklingzeit",                  "Schaden über Zeit",                    "Effekt 3",                             "Multiplikator (Bonus)",
             null,                                   "Auslösungen pro Minute",               "Multiplikator (Betrag)",               "Widerstand gegen Bannung",             "kritischer Bonusschaden2",
             "Kostenrückerstattung bei Fehlschlag"
@@ -1565,7 +1630,7 @@ $lang = array(
             "Inschriftenkunde",                     "Vom Fahrzeug öffnen"
         ),
         'stealthType'   => ["Allgemein", "Falle"],
-        'invisibilityType' => [null, "Allgemein", null, "Falle", null, null, "Trunkenheit", null, null, null, null, null],
+        'invisibilityType' => ["Allgemein", "UNK-1", "UNK-2", "Falle", "UNK-4", "UNK-5", "Trunkenheit", "UNK-7", "UNK-8", "UNK-9", "UNK-10", "UNK-11"],
         'attributes'    => array(                           // index defined by filters
             69 => "Alle Zaubereffekte sind schädlich",
             57 => "Aura kann nicht entfernt werden",
@@ -1625,7 +1690,7 @@ $lang = array(
             89 => "Verwendbar, während Ihr verängstigt seid",
             65 => "Braucht alle Ressourcen auf"
         ),
-        'unkEffect'     => 'Unknown Effect',
+        'unkEffect'     => 'Unknown Effect (%1$d)',
         'effects'       => array(
 /*0-5    */ 'None',                     'Instakill',                'School Damage',            'Dummy',                    'Portal Teleport',          'Teleport Units',
 /*6+     */ 'Apply Aura',               'Environmental Damage',     'Drain Power',              'Drain Health',             'Heal',                     'Bind',
@@ -1656,7 +1721,7 @@ $lang = array(
 /*156+   */ 'Add Socket to Item',       'Create Tradeskill Item',   'Milling',                  'Rename Pet',               null,                       'Change Talent Spec. Count',
 /*162-167*/ 'Activate Talent Spec.',    null,                       'Remove Aura',              null,                       null,                       'Update Player Phase'
         ),
-        'unkAura'       => 'Unknown Aura',
+        'unkAura'       => 'Unknown Aura (%1$d)',
         'auras'         => array(
 /*0-   */   'None',                                 'Bind Sight',                           'Possess',                              'Periodic Damage - Flat',               'Dummy',
 /*5+   */   'Confuse',                              'Charm',                                'Fear',                                 'Periodic Heal',                        'Mod Attack Speed',
@@ -1783,6 +1848,20 @@ $lang = array(
         'uniqueEquipped'=> ["Einzigartig anlegbar", null,             "Einzigartig angelegt: %s (%d)"],
         'speed'         => "Tempo",
         'dps'           => "(%.1f Schaden pro Sekunde)",
+        'duration'      => array(                           // ITEM_DURATION_*
+            '',
+            "Dauer: %d Sek.",
+            "Dauer: %d Min.",
+            "Dauer: %d |4Stunde:Stunden;",
+            "Dauer: %d |4Tag:Tage;"
+        ),
+        'cooldown'      => array(                           // ITEM_COOLDOWN_TOTAL*
+            '(%s Abklingzeit)',
+            "(%d Sek. Abklingzeit)",
+            "(%d Min. Abklingzeit)",
+            "(%d |4Stunde:Stunden; Abklingzeit)",
+            "(%d |4Tag:Tage; Abklingzeit)"
+        ),
         'damage'        => array(                           // *DAMAGE_TEMPLATE*
                         //  basic,                                              basic /w school,                                    add basic,                  add basic /w school
             'single'    => ['%d Schaden',                                       '%1$d %2$sschaden',                                 '+ %1$d Schaden',           '+ %1$d %2$sschaden'        ],

@@ -45,18 +45,15 @@ class ArenaTeamListFilter extends Filter
     public    $extraOpts     = [];
     protected $genericFilter = [];
 
-    // fieldId => [checkType, checkValue[, fieldIsArray]]
     protected $inputFields = array(
-        'na'     => [FILTER_V_REGEX,    '/[\p{C};%\\\\]/ui',                            false], // name - only printable chars, no delimiter
-        'ma'     => [FILTER_V_EQUAL,    1,                                              false], // match any / all filter
-        'ex'     => [FILTER_V_EQUAL,    'on',                                           false], // only match exact
-        'si'     => [FILTER_V_LIST,     [1, 2],                                         false], // side
-        'sz'     => [FILTER_V_LIST,     [2, 3, 5],                                      false], // tema size
-        'rg'     => [FILTER_V_CALLBACK, 'cbRegionCheck',                                false], // region
-        'sv'     => [FILTER_V_CALLBACK, 'cbServerCheck',                                false], // server
+        'na' => [FILTER_V_REGEX,    parent::PATTERN_NAME, false], // name - only printable chars, no delimiter
+        'ma' => [FILTER_V_EQUAL,    1,                    false], // match any / all filter
+        'ex' => [FILTER_V_EQUAL,    'on',                 false], // only match exact
+        'si' => [FILTER_V_LIST,     [1, 2],               false], // side
+        'sz' => [FILTER_V_LIST,     [2, 3, 5],            false], // tema size
+        'rg' => [FILTER_V_CALLBACK, 'cbRegionCheck',      false], // region
+        'sv' => [FILTER_V_CALLBACK, 'cbServerCheck',      false], // server
     );
-
-    protected function createSQLForCriterium(&$cr) { }
 
     protected function createSQLForValues()
     {
@@ -125,6 +122,7 @@ class RemoteArenaTeamList extends ArenaTeamList
                 );
 
     private     $members   = [];
+    private     $rankOrder = [];
 
     public function __construct($conditions = [], $miscData = null)
     {
@@ -290,12 +288,28 @@ class RemoteArenaTeamList extends ArenaTeamList
 
             $memberData = [];
             foreach ($teams as $teamId => $team)
+            {
+                $clearMembers = [];
                 foreach ($team as $memberId => $member)
-                    $memberData[] = array(
+                {
+                    $clearMembers[] = $profiles[$realmId]->getEntry($realmId.':'.$memberId)['id'];
+                    $memberData[]   = array(
                         'arenaTeamId' => $localIds[$realmId.':'.$teamId],
                         'profileId'   => $profiles[$realmId]->getEntry($realmId.':'.$memberId)['id'],
                         'captain'     => $member[2]
                     );
+                }
+
+                // Delete members from other teams of the same type
+                DB::Aowow()->query(
+                   'DELETE atm
+                    FROM   ?_profiler_arena_team_member atm
+                    JOIN   ?_profiler_arena_team at ON atm.`arenaTeamId` = at.`id` AND at.`type` = ?d
+                    WHERE  atm.`profileId` IN (?a)',
+                    $data[$realmId.':'.$teamId]['type'] ?? 0,
+                    $clearMembers
+                );
+            }
 
             foreach (Util::createSqlBatchInsert($memberData) as $ins)
                 DB::Aowow()->query('INSERT IGNORE INTO ?_profiler_arena_team_member (?#) VALUES '.$ins, array_keys(reset($memberData)));

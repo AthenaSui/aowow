@@ -325,7 +325,8 @@ var mn_objects = [
     [-3,"Herbes"],
     [-4,"Filons de minerai"],
     [-2,"Quête"],
-    [-6,"Outils"]
+    [-6,"Outils"],
+    [6,"Pièges"]
 ];
 var mn_quests = [
     [,"Continents"],
@@ -1449,6 +1450,7 @@ var g_object_types = {
        0: 'Autre',
        9: 'Livre',
        3: 'Conteneur',
+       6: 'Piège',
     "-5": 'Coffre',
       25: 'Banc de poissons',
     "-3": 'Herbe',
@@ -2136,7 +2138,7 @@ var g_zone_areas = {
      209: ['La cour', 'Salle à manger', 'Antre Vacant', 'Observatoire Inférieur', 'Observatoire Supérieur', 'Chambre du seigneur Godfrey', 'Le chemin de ronde'],
      719: ['Le Bassin d\'Ask\'ar', 'Sanctuaire d’Écrin-de-Lune', 'Les bassins Oubliés'],
      721: ['Le Hall des engrenages', 'Le dortoir', 'Baie de lancement', 'Cour du Bricoleur'],
-     796: ['[Cimetière]', '[Bibliothèque]', '[Armurerie]', '[Cathédrale]'],
+     796: ['Cimetière', 'La Bibliothèque', 'Armurerie', 'Cathédrale'],
     1196: ['Pinnacle inférieur', 'Pinacle Supérieur'],
     1337: ['Hall des Gardiens', 'Siège de Khaz\'goroth'],
     1581: ['Les Mortemines', 'Crique du Cuirassé'],
@@ -3177,6 +3179,7 @@ var LANG = {
     tab_weaponskills:        "Compétences d'armes",
     tab_world:               "Monde",
     tab_zones:               "Zones",
+    tab_bonusloot:           "Butin bonus",                 // aowow - custom from BONUS_LOOT_LABEL
 
     numberofupvotesreceived_tip: "Nombre de votes positifs reçus",
     deletethisreply_stc:         "Effacer cette réponse",
@@ -3647,7 +3650,7 @@ var LANG = {
         event:          [
                             [285, "Appel aux armes : bassin d'Arathi"],                                     [284, "Appel aux armes : goulet des Chanteguerres"],                            [400, "Appel aux armes : rivage des Anciens"],
                             [283, "Appel aux armes : vallée d'Alterac"],                                    [420, "Appel aux armes : île des Conquérants"],                                 [353, "Appel aux armes : Œil du cyclone"],
-                            [301, "Concours de pêche de Strangleronce"],                                    [335, "De l'amour dans l'air"],         [374, "Foire de Sombrelune"],           [372, "Fête des Brasseurs"],
+                            [301, "Concours de pêche de Strangleronce"],                                    [423, "De l'amour dans l'air"],         [374, "Foire de Sombrelune"],           [372, "Fête des Brasseurs"],
                             [321, "Fête des moissons"],             [341, "Fête du Feu du solstice d'été"], [327, "Fête lunaire"],                  [409, "Jour des morts"],                [398, "Jour des pirates"],
                             [181, "Le Jardin des nobles"],          [404, "Les Bienfaits du pèlerin"],      [324, "Sanssaint"],                     [201, "Semaine des enfants"],           [424, "Tournoi de pêche kalu'ak"],
                             [141, "Voile d'hiver"]

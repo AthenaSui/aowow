@@ -13,8 +13,9 @@ class ZonePage extends GenericPage
     protected $path      = [0, 6];
     protected $tabId     = 0;
     protected $type      = Type::ZONE;
+    protected $typeId    = 0;
     protected $tpl       = 'detail-page-generic';
-    protected $js        = [[JS_FILE, 'ShowOnMap.js']];
+    protected $scripts   = [[SC_JS_FILE, 'js/ShowOnMap.js']];
 
     protected $zoneMusic = [];
 
@@ -33,7 +34,7 @@ class ZonePage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=zones&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=zones']);
 
         /***********/
         /* Infobox */
@@ -183,6 +184,15 @@ class ZonePage extends GenericPage
 
         $questsLV = $rewardsLV = [];
 
+        $relQuestZOS = [$this->typeId];
+        foreach (Game::$questSubCats as $parent => $children)
+        {
+            if (in_array($this->typeId, $children))
+                $relQuestZOS[] = $parent;
+            else if ($this->typeId == $parent)
+                $relQuestZOS = array_merge($relQuestZOS, $children);
+        }
+
         // see if we can actually display a map
         $hasMap = file_exists('static/images/wow/maps/'.Util::$localeStrings[User::$localeId].'/normal/'.$this->typeId.'.jpg');
         if (!$hasMap)                                       // try multilayered
@@ -256,6 +266,9 @@ class ZonePage extends GenericPage
                         // store data for misc tabs
                         foreach ($started->getListviewData() as $id => $data)
                         {
+                            if ($started->getField('zoneOrSort') > 0 && !in_array($started->getField('zoneOrSort'), $relQuestZOS))
+                                continue;
+
                             if (!empty($started->rewards[$id][Type::ITEM]))
                                 $rewardsLV = array_merge($rewardsLV, array_keys($started->rewards[$id][Type::ITEM]));
 
@@ -353,6 +366,9 @@ class ZonePage extends GenericPage
                         // store data for misc tabs
                         foreach ($started->getListviewData() as $id => $data)
                         {
+                            if ($started->getField('zoneOrSort') > 0 && !in_array($started->getField('zoneOrSort'), $relQuestZOS))
+                                continue;
+
                             if (!empty($started->rewards[$id][Type::ITEM]))
                                 $rewardsLV = array_merge($rewardsLV, array_keys($started->rewards[$id][Type::ITEM]));
 
@@ -508,7 +524,7 @@ class ZonePage extends GenericPage
 
             $this->extendGlobalData($creatureSpawns->getJSGlobals(GLOBALINFO_SELF));
 
-            $this->lvTabs[] = ['creature', $tabData];
+            $this->lvTabs[] = [CreatureList::$brickFile, $tabData];
         }
 
         // tab: Objects
@@ -524,24 +540,40 @@ class ZonePage extends GenericPage
 
             $this->extendGlobalData($objectSpawns->getJSGlobals(GLOBALINFO_SELF));
 
-            $this->lvTabs[] = ['object', $tabData];
+            $this->lvTabs[] = [GameObjectList::$brickFile, $tabData];
         }
 
-        // tab: Quests [data collected by SOM-routine]
+        $quests = new QuestList(array(['zoneOrSort', $this->typeId]));
+        if (!$quests->error)
+        {
+            $this->extendGlobalData($quests->getJSGlobals());
+            foreach ($quests->getListviewData() as $id => $data)
+            {
+                if (!empty($quests->rewards[$id][Type::ITEM]))
+                    $rewardsLV = array_merge($rewardsLV, array_keys($quests->rewards[$id][Type::ITEM]));
+
+                if (!empty($quests->choices[$id][Type::ITEM]))
+                    $rewardsLV = array_merge($rewardsLV, array_keys($quests->choices[$id][Type::ITEM]));
+
+                $questsLV[$id] = $data;
+            }
+        }
+
+        // tab: Quests [including data collected by SOM-routine]
         if ($questsLV)
         {
-            $tabData = ['quest', ['data' => array_values($questsLV)]];
+            $tabData = ['data' => array_values($questsLV)];
 
             foreach (Game::$questClasses as $parent => $children)
             {
-                if (in_array($this->typeId, $children))
-                {
-                    $tabData[1]['note'] = '$$WH.sprintf(LANG.lvnote_zonequests, '.$parent.', '.$this->typeId.',"'.$this->subject->getField('name', true).'", '.$this->typeId.')';
-                    break;
-                }
+                if (!in_array($this->typeId, $children))
+                    continue;
+
+                $tabData['note'] = '$$WH.sprintf(LANG.lvnote_zonequests, '.$parent.', '.$this->typeId.',"'.$this->subject->getField('name', true).'", '.$this->typeId.')';
+                break;
             }
 
-            $this->lvTabs[] = $tabData;
+            $this->lvTabs[] = [QuestList::$brickFile, $tabData];
         }
 
         // tab: item-quest starter
@@ -560,7 +592,7 @@ class ZonePage extends GenericPage
             $qsiList = new ItemList(array(['id', array_keys($questStartItem)]));
             if (!$qsiList->error)
             {
-                $this->lvTabs[] = ['item', array(
+                $this->lvTabs[] = [ItemList::$brickFile, array(
                     'data' => array_values($qsiList->getListviewData()),
                     'name' => '$LANG.tab_startsquest',
                     'id'   => 'starts-quest'
@@ -576,7 +608,7 @@ class ZonePage extends GenericPage
             $rewards = new ItemList(array(['id', array_unique($rewardsLV)]));
             if (!$rewards->error)
             {
-                $this->lvTabs[] = ['item', array(
+                $this->lvTabs[] = [ItemList::$brickFile, array(
                     'data' => array_values($rewards->getListviewData()),
                     'name' => '$LANG.tab_questrewards',
                     'id'   => 'quest-rewards',
@@ -608,12 +640,17 @@ class ZonePage extends GenericPage
                 $lv['condition'][0][$this->typeId][] = [[CND_QUESTTAKEN, &$reqQuest[$lv['id']]]];
             }
 
-            $this->lvTabs[] = ['item', array(
+            $note = '';
+            if ($skill = DB::World()->selectCell('SELECT `skill` FROM skill_fishing_base_level WHERE `entry` = ?d', $this->typeId))
+               $note = '<b class="tip" onmouseover="$WH.Tooltip.showAtCursor(event, \''.Lang::zone('fishingSkill').'\', 0, 0, \'q\')" onmousemove="$WH.Tooltip.cursorUpdate(event)" onmouseout="$WH.Tooltip.hide()">'.Lang::formatSkillBreakpoints(Game::getBreakpointsForSkill(SKILL_FISHING, $skill), Lang::FMT_HTML).'</b>';
+
+            $this->lvTabs[] = [ItemList::$brickFile, array(
                 'data'       => array_values($fish->getResult()),
                 'name'       => '$LANG.tab_fishing',
                 'id'         => 'fishing',
                 'extraCols'  => array_unique($xCols),
-                'hiddenCols' => ['side']
+                'hiddenCols' => ['side'],
+                'note'       => $note
             )];
         }
 
@@ -714,7 +751,7 @@ class ZonePage extends GenericPage
                 if ($extra)
                     $tabData['extraCols'] = ['$Listview.extraCols.condition'];
 
-                $this->lvTabs[] = ['spell', $tabData];
+                $this->lvTabs[] = [SpellList::$brickFile, $tabData];
             }
         }
 
@@ -722,7 +759,7 @@ class ZonePage extends GenericPage
         $subZones = new ZoneList(array(['parentArea', $this->typeId]));
         if (!$subZones->error)
         {
-            $this->lvTabs[] = ['zone', array(
+            $this->lvTabs[] = [ZoneList::$brickFile, array(
                 'data'       => array_values($subZones->getListviewData()),
                 'name'       => '$LANG.tab_zones',
                 'id'         => 'subzones',
@@ -780,7 +817,7 @@ class ZonePage extends GenericPage
 
                 $tabData['data'] = array_values($data);
 
-                $this->lvTabs[] = ['sound', $tabData];
+                $this->lvTabs[] = [SoundList::$brickFile, $tabData];
 
                 $this->extendGlobalData($music->getJSGlobals(GLOBALINFO_SELF));
 

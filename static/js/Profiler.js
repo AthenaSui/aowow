@@ -1427,6 +1427,7 @@ function Profiler() {
                     a  = $WH.ce('a');
 
                 td.style.lineHeight = '1em';
+                td.style.padding = '0px';
 
                 $WH.ae(th, Icon.create((_profile.customs[i].length == 3 && _profile.customs[i][2] ? _profile.customs[i][2] : 'inv_misc_questionmark'), 0, null, '?profile=' + i));
                 $WH.ae(tr, th);
@@ -7725,6 +7726,18 @@ function ProfilerCompletion(_parent) {
                     result.excluded[overall]++;
                 }
             }
+        }
+
+        // aowow: added for &partial init
+        if (subtotal == null && window[_opt.order] && window[_opt.cattotal]) {
+            let sumtotal = 0;
+
+            for (var i = 0, len = window[_opt.order].length; i < len; ++i) {
+                let cat = window[_opt.order][i];
+                result.all[cat] = window[_opt.cattotal][cat][_profile.race][_profile.classs];
+                sumtotal += window[_opt.cattotal][cat][_profile.race][_profile.classs];
+            }
+            result.all[overall] = sumtotal;
         }
 
         if (_opt.noempty) {

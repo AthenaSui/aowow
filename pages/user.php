@@ -6,12 +6,19 @@ if (!defined('AOWOW_REVISION'))
 
 class UserPage extends GenericPage
 {
+    protected $lvTabs        = [];
+    protected $forceTabs     = true;
+    protected $infobox       = [];
+    protected $contributions = '';
+
     protected $tpl      = 'user';
-    protected $js       = [[JS_FILE, 'user.js'], [JS_FILE, 'profile.js']];
-    protected $css      = [[CSS_FILE, 'Profiler.css']];
+    protected $scripts  = array(
+        [SC_JS_FILE,  'js/user.js'],
+        [SC_JS_FILE,  'js/profile.js'],
+        [SC_CSS_FILE, 'css/Profiler.css']
+    );
     protected $mode     = CACHE_TYPE_NONE;
 
-    protected $typeId   = 0;
     protected $pageName = '';
     protected $user     = [];
 
@@ -133,9 +140,6 @@ class UserPage extends GenericPage
         /* Extra Tabs */
         /**************/
 
-        $this->lvTabs = [];
-        $this->forceTabs = true;
-
         // [unused] Site Achievements
 
         // Reputation changelog (params only for comment-events)
@@ -148,7 +152,7 @@ class UserPage extends GenericPage
         }
 
         // Comments
-        if ($_ = CommunityContent::getCommentPreviews(['user' => $this->user['id'], 'replies' => false], $nFound))
+        if ($_ = CommunityContent::getCommentPreviews(['user' => $this->user['id'], 'comments' => true], $nFound))
         {
             $tabData = array(
                 'data'           => $_,
@@ -237,7 +241,7 @@ class UserPage extends GenericPage
         $profiles = new LocalProfileList($conditions);
         if (!$profiles->error)
         {
-            $this->addScript([JS_FILE, '?data=weight-presets&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+            $this->addScript([SC_JS_FILE, '?data=weight-presets']);
 
             // Characters
             if ($chars = $profiles->getListviewData(PROFILEINFO_CHARACTER | PROFILEINFO_USER))

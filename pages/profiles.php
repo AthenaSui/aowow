@@ -10,6 +10,11 @@ class ProfilesPage extends GenericPage
 {
     use TrProfiler;
 
+    private $filterObj  = null;
+
+    protected $subCat   = '';
+    protected $filter   = [];
+    protected $lvTabs   = [];
     protected $roster   = 0;                                // $_GET['roster'] = 1|2|3|4 .. 2,3,4 arenateam-size (4 => 5-man), 1 guild .. it puts a resync button on the lv...
 
     protected $type     = Type::PROFILE;
@@ -17,17 +22,23 @@ class ProfilesPage extends GenericPage
     protected $tabId    = 1;
     protected $path     = [1, 5, 0];
     protected $tpl      = 'profiles';
-    protected $js       = [[JS_FILE, 'filters.js'], [JS_FILE, 'profile_all.js'], [JS_FILE, 'profile.js']];
-    protected $css      = [[CSS_FILE, 'Profiler.css']];
+    protected $scripts  = array(
+        [SC_JS_FILE,  'js/filters.js'],
+        [SC_JS_FILE,  'js/profile_all.js'],
+        [SC_JS_FILE,  'js/profile.js'],
+        [SC_CSS_FILE, 'css/Profiler.css']
+    );
 
     protected $_get     = ['filter' => ['filter' => FILTER_UNSAFE_RAW]];
 
     public function __construct($pageCall, $pageParam)
     {
+        $this->getSubjectFromUrl($pageParam);
+
+        parent::__construct($pageCall, $pageParam);
+
         if (!CFG_PROFILER_ENABLE)
             $this->error();
-
-        $this->getSubjectFromUrl($pageParam);
 
         $realms = [];
         foreach (Profiler::getRealms() as $idx => $r)
@@ -43,8 +54,6 @@ class ProfilesPage extends GenericPage
         }
 
         $this->filterObj = new ProfileListFilter(false, ['realms' => $realms]);
-
-        parent::__construct($pageCall, $pageParam);
 
         $this->name   = Util::ucFirst(Lang::game('profiles'));
         $this->subCat = $pageParam ? '='.$pageParam : '';
@@ -62,7 +71,7 @@ class ProfilesPage extends GenericPage
 
     protected function generateContent()
     {
-        $this->addScript([JS_FILE, '?data=weight-presets.realms&locale='.User::$localeId.'&t='.$_SESSION['dataKey']]);
+        $this->addScript([SC_JS_FILE, '?data=weight-presets.realms']);
 
         $conditions = [];
 
@@ -180,8 +189,12 @@ class ProfilesPage extends GenericPage
             $this->roster = 0;
 
 
-        $this->lvTabs[] = ['profile', $tabData];
+        $this->lvTabs[] = [ProfileList::$brickFile, $tabData];
+    }
 
+    protected function postCache()
+    {
+        // sort for dropdown-menus
         Lang::sort('game', 'cl');
         Lang::sort('game', 'ra');
     }
