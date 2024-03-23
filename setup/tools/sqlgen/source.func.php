@@ -505,7 +505,7 @@ SqlGen::register(new class extends SetupScript
         $vendors  = DB::World()->select(
            'SELECT   n.item, n.npc, SUM(n.qty) AS qty, it.class, it.subclass, it.spellid_1, it.spelltrigger_1, it.spellid_2, it.spelltrigger_2
             FROM     (SELECT item, entry AS npc, COUNT(1) AS qty FROM npc_vendor                                                       WHERE ExtendedCost NOT IN (?a) GROUP BY item, npc UNION
-                      SELECT item,  c.id AS npc, COUNT(1) AS qty FROM game_event_npc_vendor genv JOIN creature c ON c.guid = genv.guid WHERE ExtendedCost NOT IN (?a) GROUP BY item, npc) n
+                      SELECT item,  c.id1 AS npc, COUNT(1) AS qty FROM game_event_npc_vendor genv JOIN creature c ON c.guid = genv.guid WHERE ExtendedCost NOT IN (?a) GROUP BY item, npc) n
             JOIN     item_template it ON it.entry = n.item
             GROUP BY item, npc',
             $xCostIds, $xCostIds
@@ -1018,7 +1018,7 @@ SqlGen::register(new class extends SetupScript
     {
         CLI::write('   * #6  Trainer', CLI::LOG_BLANK, true, true);
 
-        $tNpcs = DB::World()->select('SELECT SpellID AS ARRAY_KEY, cdt.CreatureId AS entry, COUNT(1) AS qty FROM `trainer_spell` ts JOIN `creature_default_trainer` cdt ON cdt.TrainerId = ts.TrainerId GROUP BY ARRAY_KEY');
+        $tNpcs = DB::World()->select('SELECT SpellID AS ARRAY_KEY, ID AS entry, COUNT(1) AS qty FROM npc_trainer WHERE SpellID > 0 GROUP BY ARRAY_KEY');
 
         if (!$tNpcs)
         {
@@ -1037,7 +1037,7 @@ SqlGen::register(new class extends SetupScript
                 continue;
 
             $effects   = $tSpells[$spellId];
-            $trainerId = $npc['qty'] > 1 ? 0 : $npc['entry'];
+            $trainerId = $npc['entry'] > 200000 || $npc['qty'] > 1 ? 0 : $npc['entry'];
 
             $triggered = false;
             for ($i = 1; $i <= 3; $i++)

@@ -53,7 +53,7 @@ SqlGen::register(new class extends SetupScript
                 IFNULL(qa.SourceSpellId, 0),
                 RewardXPDifficulty,                             -- QuestXP.dbc x level
                 RewardMoney,
-                RewardBonusMoney,
+                RewardMoneyDifficulty,
                 RewardDisplaySpell,                 RewardSpell,
                 RewardHonor * 124 * RewardKillHonor,            -- alt calculation in QuestDef.cpp -> Quest::CalculateHonorGain(playerLevel)
                 IFNULL(qa.RewardMailTemplateId, 0), IFNULL(qa.RewardMailDelay, 0),

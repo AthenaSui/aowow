@@ -38,7 +38,7 @@ SqlGen::register(new class extends SetupScript
               'script_waypoint table', Type::NPC],
 
         6 => ['SELECT c.guid, w.entry AS "npcOrPath", w.pointId AS "point", c.zoneId AS areaId, c.map, 0 AS "wait", w.position_y AS `posX`, w.position_x AS `posY` ' .
-              'FROM creature c JOIN waypoints w ON c.id = w.entry',
+              'FROM creature c JOIN waypoints w ON c.id1 = w.entry',
               'waypoints table', Type::NPC],
 
         7 => ['SELECT c.guid, -w.id AS "npcOrPath", w.point, c.zoneId AS areaId, c.map, w.delay AS "wait", w.position_y AS `posX`, w.position_x AS `posY` ' .
