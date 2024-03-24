@@ -974,7 +974,7 @@ var mn_petCalc = [
 var mn_database = [
     [, "物品"],
     [0,"物品","?items",mn_items],
-    [2,"物品组合","?itemsets",mn_itemSets],
+    [2,"物品套装","?itemsets",mn_itemSets],
     [101,"附魔","?enchantments",mn_enchantments],
     [, "角色"],
     [9,"成就","?achievements",mn_achievements],

@@ -36,7 +36,7 @@ class SmartAI
         );
 
         if ($npcGuids = DB::Aowow()->selectCol('SELECT guid FROM ?_spawns WHERE `type` = ?d AND `typeId` = ?d', Type::NPC, $npcId))
-            if ($groups = DB::World()->selectCol('SELECT `groupId` FROM spawn_group WHERE `spawnType` = 0 AND `spawnId` IN (?a)', $npcGuids))
+            if ($groups = DB::World()->selectCol('SELECT `groupId` FROM tc_spawn_group WHERE `spawnType` = 0 AND `spawnId` IN (?a)', $npcGuids))
                 foreach ($groups as $g)
                     $lookup[SAI_ACTION_SPAWN_SPAWNGROUP][1] = $g;
 
@@ -60,7 +60,7 @@ class SmartAI
         );
 
         if ($objGuids = DB::Aowow()->selectCol('SELECT guid FROM ?_spawns WHERE `type` = ?d AND `typeId` = ?d', Type::OBJECT, $objectId))
-            if ($groups = DB::World()->selectCol('SELECT `groupId` FROM spawn_group WHERE `spawnType` = 1 AND `spawnId` IN (?a)', $objGuids))
+            if ($groups = DB::World()->selectCol('SELECT `groupId` FROM tc_spawn_group WHERE `spawnType` = 1 AND `spawnId` IN (?a)', $objGuids))
                 foreach ($groups as $g)
                     $lookup[SAI_ACTION_SPAWN_SPAWNGROUP][1] = $g;
 
@@ -213,7 +213,7 @@ class SmartAI
         if (!empty($moreInfo[SAI_ACTION_SPAWN_SPAWNGROUP]))
         {
             $grp = $moreInfo[SAI_ACTION_SPAWN_SPAWNGROUP];
-            if ($sgs = DB::World()->selectCol('SELECT `spawnId` FROM spawn_group WHERE `spawnType` = ?d AND `groupId` IN (?a)', 0 /*0:SUMMONER_TYPE_CREATURE*/, $grp))
+            if ($sgs = DB::World()->selectCol('SELECT `spawnId` FROM tc_spawn_group WHERE `spawnType` = ?d AND `groupId` IN (?a)', 0 /*0:SUMMONER_TYPE_CREATURE*/, $grp))
                 if ($ids = DB::Aowow()->selectCol('SELECT DISTINCT `typeId` FROM ?_spawns WHERE `type` = ?d AND `guid` IN (?a)', Type::NPC, $sgs))
                     $result = array_merge($result, $ids);
         }
@@ -234,7 +234,7 @@ class SmartAI
         if (!empty($moreInfo[SAI_ACTION_SPAWN_SPAWNGROUP]))
         {
             $grp = $moreInfo[SAI_ACTION_SPAWN_SPAWNGROUP];
-            if ($sgs = DB::World()->selectCol('SELECT `spawnId` FROM spawn_group WHERE `spawnType` = ?d AND `groupId` IN (?a)', 1 /*1:SUMMONER_TYPE_GAMEOBJECT*/, $grp))
+            if ($sgs = DB::World()->selectCol('SELECT `spawnId` FROM tc_spawn_group WHERE `spawnType` = ?d AND `groupId` IN (?a)', 1 /*1:SUMMONER_TYPE_GAMEOBJECT*/, $grp))
                 if ($ids = DB::Aowow()->selectCol('SELECT DISTINCT `typeId` FROM ?_spawns WHERE `type` = ?d AND `guid` IN (?a)', Type::OBJECT, $sgs))
                     $result = array_merge($result, $ids);
         }
@@ -524,7 +524,7 @@ class SmartAI
         switch ($this->itr['target']['type'])
         {
             case SAI_TARGET_CREATURE_GUID:
-                if ($id = DB::World()->selectCell('SELECT id FROM creature WHERE guid = ?d', $this->itr['target']['param'][0]))
+                if ($id = DB::World()->selectCell('SELECT id1 FROM creature WHERE guid = ?d', $this->itr['target']['param'][0]))
                     return $id;
 
                 break;
@@ -732,7 +732,7 @@ class SmartAI
                 $t['param'][10] = $getDist($t['param'][1], $t['param'][2]);
                 break;
             case SAI_TARGET_CREATURE_GUID:                  // 10
-                if ($t['param'][10] = DB::World()->selectCell('SELECT id FROM creature WHERE guid = ?d', $t['param'][0]))
+                if ($t['param'][10] = DB::World()->selectCell('SELECT id1 FROM creature WHERE guid = ?d', $t['param'][0]))
                     $this->jsGlobals[Type::NPC][] = $t['param'][10];
                 else
                     trigger_error('SmartAI::resloveTarget - creature with guid '.$t['param'][0].' not in DB');
@@ -941,7 +941,7 @@ class SmartAI
                 break;
             case SAI_EVENT_DISTANCE_CREATURE:               // 75  -  On creature guid OR any instance of creature entry is within distance.
                 if ($e['param'][0])
-                    $e['param'][10] = DB::World()->selectCell('SELECT id FROM creature WHERE guid = ?d', $e['param'][0]);
+                    $e['param'][10] = DB::World()->selectCell('SELECT id1 FROM creature WHERE guid = ?d', $e['param'][0]);
                 // do not break;
             case SAI_EVENT_DISTANCE_GAMEOBJECT:             // 76  -  On gameobject guid OR any instance of gameobject entry is within distance.
                 if ($e['param'][0] && !$e['param'][10])
@@ -1565,8 +1565,8 @@ class SmartAI
                 break;
             case SAI_ACTION_SPAWN_SPAWNGROUP:               // 131
             case SAI_ACTION_DESPAWN_SPAWNGROUP:             // 132
-                $a['param'][6] = DB::World()->selectCell('SELECT `GroupName` FROM spawn_group_template WHERE `groupId` = ?d', $a['param'][0]);
-                $entities = DB::World()->select('SELECT `spawnType` AS "0", `spawnId` AS "1" FROM spawn_group WHERE `groupId` = ?d',  $a['param'][0]);
+                $a['param'][6] = DB::World()->selectCell('SELECT `GroupName` FROM tc_spawn_group_template WHERE `groupId` = ?d', $a['param'][0]);
+                $entities = DB::World()->select('SELECT `spawnType` AS "0", `spawnId` AS "1" FROM tc_spawn_group WHERE `groupId` = ?d',  $a['param'][0]);
 
                 $n = 5;
                 foreach ($entities as [$spawnType, $guid])

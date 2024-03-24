@@ -9,7 +9,7 @@ if (!CLI)
 
     /* deps:
      * player_classlevelstats
-     * player_levelstats
+     * tc_player_levelstats
     */
 
     // Create 'statistics'-file in datasets
@@ -58,7 +58,7 @@ if (!CLI)
         $race = function()
         {
             // { str, agi, sta, int, spi, raceMod1, raceMod2 }
-            $raceData = DB::World()->select('SELECT `race` AS ARRAY_KEY, MIN(`str`), MIN(`agi`), MIN(`sta`), MIN(`inte`), MIN(`spi`) FROM player_levelstats WHERE `level` = 1 GROUP BY `race` ORDER BY `race` ASC');
+            $raceData = DB::World()->select('SELECT `race` AS ARRAY_KEY, MIN(`str`), MIN(`agi`), MIN(`sta`), MIN(`inte`), MIN(`spi`) FROM tc_player_levelstats WHERE `level` = 1 GROUP BY `race` ORDER BY `race` ASC');
             foreach ($raceData as &$rd)
                 $rd = array_values($rd + [[], []]);
 
@@ -105,9 +105,9 @@ if (!CLI)
             {
                 // humans can't be hunter, shaman, druids (use tauren here)
                 if (in_array($class, [3, 7, 11]))
-                    $offset = array_values(DB::World()->selectRow('SELECT MIN(`str`), MIN(`agi`), MIN(`sta`), MIN(`inte`), MIN(`spi`) FROM player_levelstats WHERE `level` = 1 AND `race` = 6'));
+                    $offset = array_values(DB::World()->selectRow('SELECT MIN(`str`), MIN(`agi`), MIN(`sta`), MIN(`inte`), MIN(`spi`) FROM tc_player_levelstats WHERE `level` = 1 AND `race` = 6'));
                 else
-                    $offset = array_values(DB::World()->selectRow('SELECT MIN(`str`), MIN(`agi`), MIN(`sta`), MIN(`inte`), MIN(`spi`) FROM player_levelstats WHERE `level` = 1 AND `race` = 1'));
+                    $offset = array_values(DB::World()->selectRow('SELECT MIN(`str`), MIN(`agi`), MIN(`sta`), MIN(`inte`), MIN(`spi`) FROM tc_player_levelstats WHERE `level` = 1 AND `race` = 1'));
 
                 $gtData = DB::Aowow()->select('
                     SELECT mlecrt.idx - ?d AS ARRAY_KEY, mlecrt.chance * 100, splcrt.chance * 100, mlecrt.chance * 100 * ?f, baseHP5.ratio * 1, extraHP5.ratio * 1
@@ -128,9 +128,9 @@ if (!CLI)
                         pls.str - ?d, pls.agi - ?d, pls.sta - ?d, pls.inte - ?d, pls.spi - ?d,
                         pcls.basehp, IF(pcls.basemana <> 0, pcls.basemana, 100)
                     FROM
-                        player_levelstats pls
+                        tc_player_levelstats pls
                     JOIN
-                        player_classlevelstats pcls ON pls.level = pcls.level AND pls.class = pcls.class
+                        tc_player_classlevelstats pcls ON pls.level = pcls.level AND pls.class = pcls.class
                     WHERE
                         pls.race = ?d AND pls.class = ?d ORDER BY pls.level ASC',
                     $offset[0], $offset[1], $offset[2], $offset[3], $offset[4],

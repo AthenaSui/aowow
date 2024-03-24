@@ -3,12 +3,14 @@
 if (!defined('AOWOW_REVISION'))
     die('illegal access');
 
-
 if (file_exists('config/config.php'))
     require_once 'config/config.php';
 else
     $AoWoWconf = [];
 
+if (!defined('STDOUT')) {
+    define('STDOUT', fopen('php://stdout', 'w'));
+}
 
 mb_internal_encoding('UTF-8');
 

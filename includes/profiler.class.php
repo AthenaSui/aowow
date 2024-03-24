@@ -445,7 +445,7 @@ class Profiler
         /* talents + glyphs */
         /********************/
 
-        $t = DB::Characters($realmId)->selectCol('SELECT talentGroup AS ARRAY_KEY, spell AS ARRAY_KEY2, spell FROM character_talent WHERE guid = ?d', $char['guid']);
+        $t = DB::Characters($realmId)->selectCol('SELECT specMask AS ARRAY_KEY, spell AS ARRAY_KEY2, spell FROM character_talent WHERE guid = ?d', $char['guid']);
         $g = DB::Characters($realmId)->select('SELECT talentGroup AS ARRAY_KEY, glyph1 AS g1, glyph2 AS g4, glyph3 AS g5, glyph4 AS g2, glyph5 AS g3, glyph6 AS g6 FROM character_glyphs WHERE guid = ?d', $char['guid']);
         for ($i = 0; $i < 2; $i++)
         {
@@ -522,7 +522,7 @@ class Profiler
         if ($cl == CLASS_HUNTER)
         {
             DB::Aowow()->query('DELETE FROM ?_profiler_pets WHERE `owner` = ?d', $profileId);
-            $pets = DB::Characters($realmId)->select('SELECT `id` AS ARRAY_KEY, `entry`, `modelId`, `name` FROM character_pet WHERE `owner` = ?d', $charGuid);
+            $pets = DB::Characters($realmId)->select('SELECT `id` AS ARRAY_KEY, `entry`, `modelid`, `name` FROM character_pet WHERE `owner` = ?d', $charGuid);
             foreach ($pets as $petGuid => $petData)
             {
                 $petSpells = DB::Characters($realmId)->selectCol('SELECT `spell` FROM pet_spell WHERE `guid` = ?d', $petGuid);
@@ -693,7 +693,7 @@ class Profiler
 
 
         // known spells
-        if ($spells = DB::Characters($realmId)->select('SELECT ?d AS id, ?d AS `type`, spell AS typeId FROM character_spell WHERE guid = ?d AND disabled = 0', $profileId, Type::SPELL, $char['guid']))
+        if ($spells = DB::Characters($realmId)->select('SELECT ?d AS id, ?d AS `type`, spell AS typeId FROM character_spell WHERE guid = ?d AND specMask =1', $profileId, Type::SPELL, $char['guid']))
             foreach (Util::createSqlBatchInsert($spells) as $s)
                 DB::Aowow()->query('INSERT INTO ?_profiler_completion (?#) VALUES '.$s, array_keys($spells[0]));
 
@@ -785,7 +785,7 @@ class Profiler
 
     public static function getGuildFromRealm($realmId, $guildGuid)
     {
-        $guild = DB::Characters($realmId)->selectRow('SELECT guildId, name, createDate, info, backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor FROM guild WHERE guildId = ?d', $guildGuid);
+        $guild = DB::Characters($realmId)->selectRow('SELECT guildid, name, createDate, info, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor FROM guild WHERE guildid = ?d', $guildGuid);
         if (!$guild)
             return false;
 
@@ -889,7 +889,7 @@ class Profiler
 
         $members = DB::Characters($realmId)->select('
             SELECT
-                atm.guid AS ARRAY_KEY, atm.arenaTeamId, atm.weekGames, atm.weekWins, atm.seasonGames, atm.seasonWins, atm.personalrating
+                atm.guid AS ARRAY_KEY, atm.arenaTeamId, atm.weekGames, atm.weekWins, atm.seasonGames, atm.seasonWins, atm.personalRating
             FROM
                 arena_team_member atm
             JOIN
