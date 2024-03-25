@@ -1016,11 +1016,11 @@ var mn_tools = [
     [0,"天赋模拟器","?talent",mn_talentCalc],
     [2,"猎人宠物模拟器","?petcalc",mn_petCalc],
     [3,"物品比较","?compare"],
-    [5,"Profiler","?profiler",[
+    [5,"档案库","?profiler",[
         [0,"角色","?profiles"],
         [2,"公会","?guilds"],
         [3,"竞技场队伍","?arena-teams"],
-        [1,"New","?profile&new"]
+        [1,"新建","?profile&new"]
     ]],
     [1,"地图","?maps"],
     [,"其他"],
@@ -2791,8 +2791,8 @@ var LANG = {
     lvvideo_suggest: "建议视频",
     lvvideo_from:    "来自",
 
-    lvnodata:     "没有可现实的数据。",
-    lvnodata2:    "没有找到配对。",
+    lvnodata:     "没有可显示的数据。",
+    lvnodata2:    "没有找到符合条件目标。",
     lvnodata3:    "请选择类别。",
     lvnodata4:    "你没有排除任何条目。",
     lvnodata_co1: "还无人发表过评论。",
@@ -2832,14 +2832,14 @@ var LANG = {
     lvnote_achievementsfound: "找到$1个成就 (显示$2个)",
     lvnote_achievementsind:   '成就分类目录<a href="?achievements=$1.$2" target="_blank">$3</a>.',
     lvnote_statisticsfound:   "$1 statistics found ($2 displayed)", // enUS
-    lvnote_charactersfound:   "$1 total characters", // enUS
-    lvnote_charactersfound2:  "$1 total characters, $2 matching", // enUS
+    lvnote_charactersfound:   "共计$1角色", // enUS
+    lvnote_charactersfound2:  "共计$1角色，$2 matching", // enUS
     lvnote_guildsfound:       "$1 total guilds", // enUS
     lvnote_guildsfound2:      "$1 total guilds, $2 matching", // enUS
     lvnote_arenateamsfound:   "$1 total arena teams", // enUS
     lvnote_arenateamsfound2:  "$1 total arena teams, $2 matching", // enUS
     lvnote_currenciesfound:   "发现$1种货币 (显示$2种)",
-    lvnote_enchantmentsfound: "$1 enchantments found ($2 displayed)", // enUS
+    lvnote_enchantmentsfound: "发现$1种附魔 (显示$2种)", // enUS
     lvnote_soundsfound:       "$1 sounds found ($2 displayed)",
 
     lvnote_createafilter:  '<small><a href="$1">创建筛选条件</a></small>',
@@ -2909,7 +2909,7 @@ var LANG = {
     button_include:      "包括",
     button_makepriv:     "设为隐私",
     button_makepub:      "设为公开",
-    button_new:          "新",
+    button_new:          "新建",
     button_newavatar:    "上传新的",
     button_quickexclude: "隐藏项管理",
     button_remove:       "移除",
@@ -2999,7 +2999,7 @@ var LANG = {
     confirm_signaturetoomanylines: "您的签名超过了$1行，将被删减。\n\n仍然继续吗？",
     confirm_deleteweightscale:     "您确定要删除此自定义权重标尺吗？",
 
-    prompt_colfilter1:      "您可谓$1栏设置过滤器：",
+    prompt_colfilter1:      "<$1>栏筛选条件设置：",
     prompt_colfilter2:      '如 "剑"',
     prompt_colfilter3:      '如">100", "32-34" 或 "!<=10"',
     prompt_customrating:    "请输入 -$1至$2间的等级值:",
@@ -3596,7 +3596,7 @@ var LANG = {
 
     message_fillsomecriteria: "请填入条件。",
 
-    tooltip_jconlygems:    "勾选后，宝石加工匠专属宝石<br />\n也将纳入考虑，以最大限度<br />为物品的加权分数选择宝石。",
+    tooltip_jconlygems:    "勾选后，珠宝加工专属宝石<br />\n也将纳入考虑，以最大限度<br />为物品的加权分数选择宝石。",
     tooltip_genericrating: '<span class="q2">装备：将您的$1提升<!--rtg$2-->$3&nbsp;<small>(<!--rtg%$2-->0&nbsp;@&nbsp;L<!--lvl-->0)</small>.</span><br />',
 
     fidropdowns: {
@@ -4340,7 +4340,7 @@ var LANG = {
     },
     // end aowow custom
 
-    pr_notice:     'First time? &ndash; Don\'t be shy! Just check out our <a href="?help=profiler" target="_blank">Help page</a>! &nbsp; <small class="q0"><a href="javascript:;">close</a></small>', // enUS
+    pr_notice:     '首次使用？&ndash; 不要紧，点击<a href="?help=profiler" target="_blank">帮助页面</a>查看教程！ &nbsp; <small class="q0"><a href="javascript:;">close</a></small>', // enUS
     pr_datasource: 'Data in this tab was last updated $2 by <a href="?user=$1" target="_blank">$1</a>.', // enUS
     pr_purgedata:  "Click to delete all completion data in the current tab.<br />Only the user who uploaded the data may purge it.", // enUS
 
@@ -4348,16 +4348,16 @@ var LANG = {
     message_toomanycharacters:   "Please select only 1 character.",
     message_noprofileselected:   "No profiles selected.",
     message_norowselected:       "Please select one or more items to $1 from this list.",
-    message_characterresync:     "An Armory resync has been requested for the selected characters.",
+    message_characterresync:     "已为所选角色与军械库请求同步。",
     message_resyncerror:         "An error occurred when resyncing:",
     message_saveerror:           "Error: Your profile could not be saved. Accounts have a limit of ten profiles. Please delete some from your user page, or upgrade your account to Premium for more space.",
-    message_saveok:              "Save successful!",
-    message_saveasinvalidname:   "Invalid name.",
+    message_saveok:              "保存成功！",
+    message_saveasinvalidname:   "无效的名字。",
     message_invalidlevel:        "Death Knights must be at least level 55.",
-    message_missingregion:       "Please select a region.",
-    message_missingrealm:        "Please select a realm.",
-    message_missingcharacter:    "Please enter a character name.",
-    message_profilenotsaved:     "$1Warning:$2 Your changes haven't been saved!",
+    message_missingregion:       "请选择一个区域。",
+    message_missingrealm:        "请选择一个服务器。",
+    message_missingcharacter:    "请输入角色名字。",
+    message_profilenotsaved:     "$1警告：$2 您的更改尚未保存！",
     message_nosignatureselected: "No signatures selected.",
     message_toomanysignatures:   "Please select only 1 signature.",
     message_nosigbookmarks:      "You have not bookmarked any characters. Please add some to continue.",
@@ -4381,8 +4381,8 @@ var LANG = {
     loremasteryes_tip: "This quest counts towards<br />loremaster achievements",
     loremasterno_tip:  "This quest does not count<br />towards loremaster achievements",
 
-    prompt_charlookup:       "Please enter the name of the character you wish to view:",
-    prompt_nameprofile:      "Please provide a name for this profile.\n(i.e. Resistance Gear, PvP Set, Wishlist, etc.)\n\nYou will be redirected upon saving the profile.",
+    prompt_charlookup:       "请输入要查看的角色的名称：",
+    prompt_nameprofile:      "请为此配置提供一个名称。\n(i.e. Resistance Gear, PvP Set, Wishlist，等。)\n\n保存配置文件后，您将被重定向。",
 
     dialog_notavail:   "Not available to players",
     dialog_tcg:        "Obtained via TCG loot redemption",
@@ -4398,24 +4398,24 @@ var LANG = {
     dialog_resetexclusions:  "Reset all exclusions",
 
     tab_arenateams: "Arena teams",
-    tab_character:  "Character",
+    tab_character:  "角色",
     tab_characters: "Characters",
     tab_guilds:     "Guilds",
-    tab_reputation: "Reputation",
+    tab_reputation: "声望",
 
     lvnote_clicksubcatg: "Click on a subcategory below to filter the other tabs.",
 
     button_save:      "保存",
-    button_saveas:    "Save as",
+    button_saveas:    "另存为",
     button_bookmark:  "Bookmark",
     button_pin:       "Pin",
     button_unpin:     "Unpin",
     button_claimchar: "Claim character",
-    button_resync:    "Resync",
+    button_resync:    "同步",
     button_signature: "签名",
 
-    button_customprofile: "Custom profile",
-    button_armorychar:    "Manage character",
+    button_customprofile: "自定义配置",
+    button_armorychar:    "管理角色",
 
     pr_clienttab:    "$1<br /><span class=\"q1\">If this is your character, you can track your<br />$2 using the Wowhead Client!</span><br /><span class=\"q2\">Click to learn more</span>",
     pr_lookup:       "Lookup: ",
@@ -4434,8 +4434,8 @@ var LANG = {
     pr_dungeons:     "Dungeons",
 
     pr_tt_items:    "物品",
-    pr_tt_enchants: "Enchants",
-    pr_tt_gems:     "Gems",
+    pr_tt_enchants: "附魔",
+    pr_tt_gems:     "宝石",
     pr_tt_normal:   "$1 (10人)",
     pr_tt_heroic:   "$1 (25人)",
     pr_tt_earned:   "$1 has earned $2 of $3 achievements ($4%).",
@@ -4454,10 +4454,10 @@ var LANG = {
     pr_tt_excldone: "Complete but excluded",
     pr_tt_questtip: "Repeatable quests and quests that don't<br />appear in your quest log aren't tracked.",
 
-    pr_tip_rclkopt:  "Tip: Right-click slots for more options.",
-    pr_tip_sclkopt:  "Tip: Shift-click items for more options.",
-    pr_tip_rclkopt2: "Tip: Right-click items, gems and enchants for more options.",
-    pr_tip_sclkopt2: "Tip: Shift-click items, gems and enchants for more options.",
+    pr_tip_rclkopt:  "提示：右键点击插槽以获取更多选项。",
+    pr_tip_sclkopt:  "提示：Shift+左键点击装备以获取更多选项。",
+    pr_tip_rclkopt2: "提示：右键点击装备、宝石、附魔以获取更多选项。",
+    pr_tip_sclkopt2: "提示：Shift+左键点击装备、宝石、附魔以获取更多选项。",
     pr_tip_quests:   "Note: <span class=\"tip\">Certain</span> quests aren't tracked by Blizzard's API.",
 
     pr_header_noname:    "Noname",
@@ -4474,30 +4474,30 @@ var LANG = {
     pr_dialog_race:        "种族：",
     pr_dialog_gender:      "性别：",
     pr_dialog_icon:        "图标：",
-    pr_dialog_iconeg:      "e.g. INV_Axe_54",
-    pr_dialog_description: "Description: ",
-    pr_dialog_public:      "Visibility: ",
+    pr_dialog_iconeg:      "例如：INV_Axe_54",
+    pr_dialog_description: "描述：",
+    pr_dialog_public:      "可见：",
 
     pr_qf_quickfacts:     "相关信息",
     pr_qf_progress:       "Progress",
     pr_qf_toc:            "Table of Contents",
-    pr_qf_owner:          "Owner: ",
+    pr_qf_owner:          "所有者：",
     pr_qf_character:      "Character: ",
     pr_qf_profiles:       "Profiles: ",
-    pr_qf_playedtime:     "Played time: ",
+    pr_qf_playedtime:     "游戏时间：",
     pr_qf_gearscore:      "Gear score: ",
     pr_qf_itemlevel:      "物品等级：",
     pr_qf_talents:        "天赋：",
     pr_qf_achievements:   "成就：",
     pr_qf_xvxteam:        "$1v$1 team: ",
     pr_qf_updated:        "Updated ",
-    pr_qf_resynced:       "Resynced ",
-    pr_qf_notsaved:       "Profile has not been saved!",
+    pr_qf_resynced:       "上次同步 ",
+    pr_qf_notsaved:       "配置文件尚未保存！",
     pr_qf_gearmeter:      "Gear",
-    pr_qf_raidactivity1:  "All Raid Activity",
-    pr_qf_raidactivity2:  "Recent Raid Activity",
-    pr_qf_activitytip1:   "Click to display recent raid activity",
-    pr_qf_activitytip2:   "Click to display all raid activity",
+    pr_qf_raidactivity1:  "所有副本活动",
+    pr_qf_raidactivity2:  "最近副本活动",
+    pr_qf_activitytip1:   "单击以显示最近的副本活动",
+    pr_qf_activitytip2:   "单击以显示全部的副本活动",
     pr_qf_activitypct1:   "$1%的全部活动",
     pr_qf_activitypct2:   "$1%的最近活动",
     pr_qf_raidcomplete:   "$1%完成",
@@ -4513,20 +4513,20 @@ var LANG = {
     menu_newprofile:      "New Custom Profile",
     menu_chooseclassspec: "选择你的职业/专精",
 
-    pr_menu_equip:      "Equip...",
-    pr_menu_replace:    "Replace...",
-    pr_menu_add:        "Add...",
-    pr_menu_unequip:    "Unequip",
+    pr_menu_equip:      "装备...",
+    pr_menu_replace:    "替换...",
+    pr_menu_add:        "添加...",
+    pr_menu_unequip:    "取消装备",
     pr_menu_remove:     "移除",
-    pr_menu_addgem:     "Add Gem...",
-    pr_menu_repgem:     "Replace Gem...",
-    pr_menu_addenchant: "Add Enchant...",
-    pr_menu_repenchant: "Replace Enchant...",
+    pr_menu_addgem:     "添加宝石...",
+    pr_menu_repgem:     "替换宝石...",
+    pr_menu_addenchant: "添加附魔...",
+    pr_menu_repenchant: "替换附魔...",
     pr_menu_addsubitem: "Add Random Property...",
     pr_menu_repsubitem: "Replace Random Property...",
     pr_menu_extrasock:  "Extra Socket",
-    pr_menu_display:    "Display on Character",
-    pr_menu_clearenh:   "Clear Enhancements",
+    pr_menu_display:    "在角色身上显示",
+    pr_menu_clearenh:   "清除附魔",
     pr_menu_links:      "链接",
     pr_menu_compare:    "比较",
     pr_menu_upgrades:   "查找升级",
@@ -4534,35 +4534,35 @@ var LANG = {
 
     pr_queue_unknown:   "Unknown",
     pr_queue_noprocess: "The queue is not currently running.",
-    pr_queue_resyncreq: "<b>An Armory resync has been requested.</b>",
-    pr_queue_addqueue:  "Adding to the Armory queue...",
-    pr_queue_status1:   "Position in queue: <b>$1</b> &ndash; Estimated time: <b>$2</b>",
-    pr_queue_status2:   "Fetching data now...",
-    pr_queue_status3:   'Data is ready! <a href="?$2" rel="np">Reload to view</a>.',
+    pr_queue_resyncreq: "<b>已请求军械库同步。</b>",
+    pr_queue_addqueue:  "添加到军械库队列。。。...",
+    pr_queue_status1:   "队列位置：<b>$1</b> &ndash; 预计时间：<b>$2</b>",
+    pr_queue_status2:   "正在获取数据...",
+    pr_queue_status3:   '数据准备就绪！<a href="?$2" rel="np">点击</a>显示。',
     pr_queue_status4:   'Unable to resync from the Armory: $1. Try <a href="javascript:;">resyncing</a> again.',
     pr_queue_batch:     "Queue: <b>$1</b> – Processing: <b>$2</b> – Ready: <b>$3</b> – Error: <b>$4</b>",
 
     pr_error_armory0:    "Error unknown",
-    pr_error_armory1:    "Character does not exist",
+    pr_error_armory1:    "角色不存在",
     pr_error_armory2:    "The Armory could not be reached",
 
-    pr_inv_title:       "Gear Summary",
-    pr_inv_missing:     "Missing: ",
+    pr_inv_title:       "装备信息",
+    pr_inv_missing:     "缺少：",
     pr_inv_lowlevel:    "Low level: ",
     pr_inv_metareq:     "Meta condition: ",
-    pr_inv_item:        "$1 item",
-    pr_inv_items:       "$1 items",
-    pr_inv_gem:         "$1 gem",
-    pr_inv_gems:        "$1 gems",
-    pr_inv_enchant:     "$1 enchant",
-    pr_inv_enchants:    "$1 enchants",
+    pr_inv_item:        "$1 装备",
+    pr_inv_items:       "$1 装备",
+    pr_inv_gem:         "$1 宝石",
+    pr_inv_gems:        "$1 宝石",
+    pr_inv_enchant:     "$1 附魔",
+    pr_inv_enchants:    "$1 附魔",
     pr_inv_socket:      "$1插槽",
     pr_inv_sockets:     "$1插槽",
 
     pr_print_none:      "无",
     pr_print_yes:       "是",
     pr_print_no:        "否",
-    pr_print_normal:    "Normal",
+    pr_print_normal:    "普通",
     pr_print_heroic:    "英雄",
 
     pr_stats_warning:    "警告：一些统计数据（尤其是闪避）可能不完全准确。",

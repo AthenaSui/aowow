@@ -234,7 +234,7 @@ class Lang
             $tmp[] = self::main('unavailable');
 
         if ($flags & CUSTOM_EXCLUDE_FOR_LISTVIEW && User::isInGroup(U_GROUP_STAFF))
-            $tmp[] = '[tooltip name=excludedHint]This entry is excluded from lists and is not searchable.[/tooltip][span tooltip=excludedHint class="tip q10"]Hidden[/span]';
+            $tmp[] = '[tooltip name=excludedHint]此条目已从列表中排除，无法搜索。[/tooltip][span tooltip=excludedHint class="tip q10"]隐藏的[/span]';
 
         return $tmp;
     }

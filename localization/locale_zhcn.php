@@ -222,7 +222,7 @@ $lang = array(
         '_cpHint'       => " <b>角色概况 <b>可以让你编辑你的角色、查找装备升级、检查装备评分等等！",
         '_cpHelp'       => "要开始使用，请按照以下步骤操作。如果需要更多信息，请查阅我们详尽的<a href=\"?help=profiler\">帮助页面</a>。",
         '_cpFooter'     => "如果你想进行更精细的搜索，请尝试我们的<a href=\"?profiles\">高级搜索</a>选项。你还可以创建一个<a href=\"?profile&amp;new\">新的自定义概况</a>。",
-        'firstUseTitle' => "%s 的 %s",
+        'firstUseTitle' => "角色/公会：%s —— 服务器：%s",
         'complexFilter' => "选择了复杂过滤器！搜索结果仅限于缓存的角色。",
         'customProfile' => "（自定义概况）",
         'resync'        => "重新同步",
@@ -1498,7 +1498,7 @@ $lang = array(
             'directSP' => "直接效果的攻击强度 +%.2f%%",         'directAP' => "直接效果的攻击强度 +%.2f%%",
             'dotSP'    => "每个周期的法术强度 +%.2f%%",                    'dotAP'    => "每个周期的攻击强度 +%.2f%%"
         ),
-		'instantPhys'   => "瞬发",		
+		'instantPhys'   => "瞬发",
         'castTime' => array(
             "瞬发法术",
             "%.3g秒施法时间",

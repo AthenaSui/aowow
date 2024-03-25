@@ -9,13 +9,13 @@ if (User::isInGroup(U_GROUP_EMPLOYEE) && ($this->time || isset($this->mysql) || 
     endif;
 
     if ($this->time):
-        echo '                <tr><td style="text-align:left;">Page generated in</td><td>'.Util::formatTime($this->time * 1000, true)."</td></tr>\n";
+        echo '                <tr><td style="text-align:left;">页面生成时间</td><td>'.Util::formatTime($this->time * 1000, true)."</td></tr>\n";
     endif;
 
     if ($this->cacheLoaded && $this->cacheLoaded[0] == CACHE_MODE_FILECACHE):
-        echo "                <tr><td style=\"text-align:left;\">reloaded from filecache</td><td>created".Lang::main('colon').date(Lang::main('dateFmtLong'), $this->cacheLoaded[1])."</td></tr>\n";
+        echo "                <tr><td style=\"text-align:left;\">从缓存文件重新加载</td><td>创建于".Lang::main('colon').date(Lang::main('dateFmtLong'), $this->cacheLoaded[1])."</td></tr>\n";
     elseif ($this->cacheLoaded && $this->cacheLoaded[0] == CACHE_MODE_MEMCACHED):
-        echo "                <tr><td style=\"text-align:left;\">reloaded from memcached</td><td>created".Lang::main('colon').date(Lang::main('dateFmtLong'), $this->cacheLoaded[1])."</td></tr>\n";
+        echo "                <tr><td style=\"text-align:left;\">从内存缓存中重新加载</td><td>创建于".Lang::main('colon').date(Lang::main('dateFmtLong'), $this->cacheLoaded[1])."</td></tr>\n";
     endif;
 
     echo "            </table>\n";
