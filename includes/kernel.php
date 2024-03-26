@@ -8,10 +8,6 @@ if (file_exists('config/config.php'))
 else
     $AoWoWconf = [];
 
-if (!defined('STDOUT')) {
-    define('STDOUT', fopen('php://stdout', 'w'));
-}
-
 mb_internal_encoding('UTF-8');
 
 // OS_WIN as per compile info of php
