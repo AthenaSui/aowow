@@ -996,8 +996,8 @@ var mn_database = [
     [, "其他"],
     [31,"图标", "?icons", mn_icons],
     [19,"声音","?sounds",mn_sounds],
-    [102, 'Areatrigger', '?areatriggers', mn_areatrigger, {requiredAccess: 1726}],    // aowow - custom
-    [103, 'Mails', '?mails']                                // aowow - custom
+    [102, '区域触发器', '?areatriggers', mn_areatrigger, {requiredAccess: 1726}],    // aowow - custom
+    [103, '系统邮件', '?mails']                                // aowow - custom
 ];
 
 var mn_guides = [
@@ -2552,7 +2552,8 @@ var LANG = {
     add:                    "添加",
     animation:              "动作",
     armor:                  "护甲",
-    text:                   "文本",
+    Attachments:            "附件",
+    text:                   "内容",
     author:                 "作者",
     battlegroup:            "战场组",
     subregion:              "分区",
@@ -2662,7 +2663,7 @@ var LANG = {
     standing:               "声望",
     stock:                  "贮存量",
     statistic:              "数据",
-    subject:                "对象",
+    subject:                "主题",
     submit:                 "提交",
     talents:                "天赋",
     territory:              "领域",

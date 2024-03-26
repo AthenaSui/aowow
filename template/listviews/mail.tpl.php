@@ -57,7 +57,7 @@ Listview.templates.mail = {
         },
         {
             id: 'attachments',
-            name: 'Attachments',
+            name: LANG.Attachments,
             type: 'text',
             compute: function(mail, td) {
                 if (!mail.attachments.length)
