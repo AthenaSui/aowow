@@ -1475,6 +1475,10 @@ $lang = array(
         '_collapseAll'  => "折叠全部",
         '_expandAll'    => "展开全部",
         '_transfer'     => '这个法术将被转换到<a href="?spell=%d" class="q%d icontiny tinyspecial" style="background-image: url('.STATIC_URL.'/images/wow/icons/tiny/%s.gif)">%s</a>，如果你转移到<span class="icon-%s">%s</span>。',
+        '_affected'     => "受影响法术",
+        '_seeMore'      => "[See more]",
+        '_rankRange'    => "排名:&nbsp;%d&nbsp;-&nbsp;%d",
+        '_showXmore'    => "[Show %d More]",
         'currentArea'   => '&lt;当前区域&gt;',
         'discovered'    => "通过发现学习",
         'ppm'           => "%s每分钟触发几率",
@@ -1494,10 +1498,6 @@ $lang = array(
         'stackGroup'    => "Stack Group",
         'linkedWith'    => "Linked with",
         '_scaling'      => "缩放比例",
-        'scaling'       => array(
-            'directSP' => "直接效果的攻击强度 +%.2f%%",         'directAP' => "直接效果的攻击强度 +%.2f%%",
-            'dotSP'    => "每个周期的法术强度 +%.2f%%",                    'dotAP'    => "每个周期的攻击强度 +%.2f%%"
-        ),
 		'instantPhys'   => "瞬发",
         'castTime' => array(
             "瞬发法术",
@@ -1543,6 +1543,10 @@ $lang = array(
             // powerDisplay
               -1 => "弹药",              -41 => "蓝铁",            -61 => "蒸汽动力",   -101 => "能量",             -121 => "软泥",             -141 => "鲜血之力",
             -142 => "愤怒"
+        ),
+        'scaling'       => array(
+            'directSP' => "直接效果的攻击强度 +%.2f%%",         'directAP' => "直接效果的攻击强度 +%.2f%%",
+            'dotSP'    => "每个周期的法术强度 +%.2f%%",                    'dotAP'    => "每个周期的攻击强度 +%.2f%%"
         ),
         'relItems'      => array(
             'base'    => "<small>显示与<b>%s</b>相关的 %s<</small>",
