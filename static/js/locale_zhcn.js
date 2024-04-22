@@ -4549,7 +4549,7 @@ var LANG = {
 
     pr_inv_title:       "装备信息",
     pr_inv_missing:     "缺少：",
-    pr_inv_lowlevel:    "Low level: ",
+    pr_inv_lowlevel:    "低等级：",
     pr_inv_metareq:     "Meta condition: ",
     pr_inv_item:        "$1 装备",
     pr_inv_items:       "$1 装备",
