@@ -39,7 +39,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'admin/screenshots';
 
                 array_push($this->path, 1, 5);
-                $this->name = 'Screenshot Manager';
+                $this->name = '截屏管理器';
                 break;
             case 'phpinfo':
                 $this->reqUGroup = U_GROUP_ADMIN | U_GROUP_DEV;
@@ -47,7 +47,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'list-page-generic';
 
                 array_push($this->path, 2, 21);
-                $this->name = 'PHP Information';
+                $this->name = 'PHP信息';
                 break;
             case 'siteconfig':
                 $this->reqUGroup = U_GROUP_ADMIN | U_GROUP_DEV;
@@ -55,7 +55,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'admin/siteconfig';
 
                 array_push($this->path, 2, 18);
-                $this->name = 'Site Configuration';
+                $this->name = '网站配置';
                 break;
             case 'weight-presets':
                 $this->reqUGroup = U_GROUP_ADMIN | U_GROUP_DEV | U_GROUP_BUREAU;
@@ -63,7 +63,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'admin/weight-presets';
 
                 array_push($this->path, 2, 16);
-                $this->name = 'Weight Presets';
+                $this->name = '权重预设';
                 break;
             case 'guides':
                 $this->reqUGroup = U_GROUP_STAFF;
@@ -71,7 +71,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'list-page-generic';
 
                 array_push($this->path, 1, 25);
-                $this->name = 'Pending Guides';
+                $this->name = '待定指南';
                 break;
             case 'out-of-date':
                 $this->reqUGroup = U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_MOD;
@@ -79,7 +79,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'list-page-generic';
 
                 array_push($this->path, 1, 23);
-                $this->name = 'Out of Date Comments';
+                $this->name = '过期评论';
                 break;
             case 'reports':
                 $this->reqUGroup = U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_EDITOR | U_GROUP_MOD | U_GROUP_LOCALIZER | U_GROUP_SCREENSHOT | U_GROUP_VIDEO;
@@ -87,7 +87,7 @@ class AdminPage extends GenericPage
                 $this->tpl       = 'admin/reports';
 
                 array_push($this->path, 5);
-                $this->name = 'Reports';
+                $this->name = '报告';
                 break;
             default:                                        // error out through unset template
         }

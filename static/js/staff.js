@@ -1,22 +1,22 @@
 var mn_content = [
 //  [22, 'Achievements',             '?admin=achievements',                   null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_DEV | U_GROUP_BUREAU}],
-    [3,  'Announcements',            '?admin=announcements',                  null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU}],
-    [25, 'Guides Awaiting Approval', '?admin=guides',                         null,           {requiredAccess: U_GROUP_STAFF}],
+    [3,  '公告',            '?admin=announcements',                  null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU}],
+    [25, '待批准指南', '?admin=guides',                         null,           {requiredAccess: U_GROUP_STAFF}],
 //  [20, 'Global Images & Headers',  '?admin=headers',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU}],
 //  [21, 'Modelviewer',              '?admin=modelviewer',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU}],
-    [23, 'Out of Date Comments',     '?admin=out-of-date',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_MOD}],
-    [5,  'Screenshots',              '?admin=screenshots',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_SCREENSHOT}],
+    [23, '过期评论',     '?admin=out-of-date',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_MOD}],
+    [5,  '截屏',              '?admin=screenshots',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_SCREENSHOT}],
 //  [18, 'Upload Image',             '?npc=15384#submit-a-screenshot',        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_EDITOR, rel: 'np'}],
-    [17, 'Videos',                   '?admin=videos',                         null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_VIDEO}],
+    [17, '视频',                   '?admin=videos',                         null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_VIDEO}],
 
-    [,   'Homepage'],
+    [,   '主页'],
     [13, 'Featured Box',             '?admin=home-featuredbox',               null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Homepage Featured Box'}],
-    [14, 'Oneliners',                '?admin=home-oneliners',                 null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Homepage Oneliners'}],
+    [14, '在线会员',                '?admin=home-oneliners',                 null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Homepage Oneliners'}],
 //  [15, 'Skins',                    '?admin=home-skins',                     null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_SALESAGENT, breadcrumb: 'Homepage Skins'}],
-    [16, 'Titles',                   '?admin=home-titles',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Homepage Titles'}],
+    [16, '主题',                   '?admin=home-titles',                    null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Homepage Titles'}],
 
-    [,   'Articles'],
-    [8,  'List',                     '?admin=articles',                       null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV | U_GROUP_EDITOR | U_GROUP_LOCALIZER, breadcrumb: 'List of Articles'}],
+    [,   '文章'],
+    [8,  '目录',                     '?admin=articles',                       null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV | U_GROUP_EDITOR | U_GROUP_LOCALIZER, breadcrumb: 'List of Articles'}],
 //  [9,  'Editors\' Lounge',         '?admin=editors-lounge',                 null,           {requiredAccess: U_GROUP_EMPLOYEE | U_GROUP_EDITOR | U_GROUP_LOCALIZER}],
 //  [23, 'Related Links',            '?admin=related-links',                  null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU}],
 
@@ -25,7 +25,7 @@ var mn_content = [
 //  [11, 'Content Corner',           '?admin=content-corner',                 null,           {requiredAccess: U_GROUP_EMPLOYEE | U_GROUP_BLOGGER}],
 //  [12, 'Tags',                     '?admin=newstag',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV | U_GROUP_BLOGGER, breadcrumb: 'News Tags'}],
 //  [24, 'Patch Updates',            '?admin=patch-updates',                  null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU}],
-    [26, 'Featured Guides',          '?admin=featuredguides',                 null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Featured Guides'}],
+    [26, '特色指南',         		 '?admin=featuredguides',                 null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU, breadcrumb: 'Featured Guides'}],
 
 //  [,   'Community'],
 //  [4,  'Contests',                 '?admin=contests',                       null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_SALESAGENT}],
@@ -39,9 +39,9 @@ var mn_content = [
 
 var mn_dev = [
 //  [17, 'Cookies',                  '?admin=cookies',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_DEV}],
-    [21, 'PHP Information',          '?admin=phpinfo',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_DEV}],
-    [18, 'Site Configuration',       '?admin=siteconfig',                     null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_DEV}],
-    [16, 'Weight Presets',           '?admin=weight-presets',                 null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}],
+    [21, 'PHP信息',         		 '?admin=phpinfo',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_DEV}],
+    [18, '网站配置',     			 '?admin=siteconfig',                     null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_DEV}],
+    [16, '权重预设',          		 '?admin=weight-presets',                 null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}],
 //  [22, 'API Keys',                 '?admin=apikey',                         null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}],
 
 //  [,   'Cache'],
@@ -101,17 +101,17 @@ var mn_users = [
 ];
 
 var mn_staff = [
-    [1,   'Content',                 null,                                    mn_content],
-    [2,   'Development',             null,                                    mn_dev],
-//  [3,   'Localization',            null,                                    mn_localization],
+    [1,   '内容',                	 null,                                    mn_content],
+    [2,   '开发',             		 null,                                    mn_dev],
+//	[3,   'Localization',            null,                                    mn_local/ization],
 //  [7,   'Statistics',              null,                                    mn_statistics,  {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}],
 //  [4,   'Users',                   null,                                    mn_users],
-    [5,   'View Reports',            '?admin=reports',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_EDITOR | U_GROUP_MOD | U_GROUP_LOCALIZER | U_GROUP_SCREENSHOT | U_GROUP_VIDEO} ],
+    [5,   '查看报告',            '?admin=reports',                        null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_EDITOR | U_GROUP_MOD | U_GROUP_LOCALIZER | U_GROUP_SCREENSHOT | U_GROUP_VIDEO} ],
 
-    [,    'Page'],
-    [102, 'Validate',                'http://validator.w3.org/check/referer', null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV | U_GROUP_TESTER}]];
+    [,    '页面'],
+    [102, '验证',                'http://validator.w3.org/check/referer', null,           {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV | U_GROUP_TESTER}]];
 
-mn_path.push([4, 'Staff', null, mn_staff]);
+mn_path.push([4, '管理员', null, mn_staff]);
 
 $(document).ready(function () {
     var footer = $('div.stafffooter');
@@ -129,13 +129,13 @@ $(document).ready(function () {
     var refresh = {};
     var subMenu = null;
     if (urlParams.refresh != null) {
-        buff = 'See Cached';
+        buff = '查看缓存';
         refresh.refresh = null
     }
     else {
         var mCached = {};
         var fiCache = {};
-        buff = 'Refresh';
+        buff = '刷新';
         if (PageTemplate.get('pageName') == 'home') {
             refresh.home = '';
             mCached.home = '';
@@ -145,8 +145,8 @@ $(document).ready(function () {
         mCached.refresh = 'memcached';
         fiCache.refresh = 'filecache';
         subMenu = [
-            [1, 'Memcached',  g_modifyUrl(location.href, mCached), null, {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}],
-            [2, 'File cache', g_modifyUrl(location.href, fiCache), null, {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}]
+            [1, '缓存的内存',  g_modifyUrl(location.href, mCached), null, {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}],
+            [2, '缓存的文件', g_modifyUrl(location.href, fiCache), null, {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}]
         ]
     }
     mn_staff.push([100, buff, g_modifyUrl(location.href, refresh), subMenu, {requiredAccess: U_GROUP_ADMIN | U_GROUP_BUREAU | U_GROUP_DEV}]);
