@@ -71,8 +71,8 @@ function setup() : void
         ['SqlGen::generate',  'titles',                   null, null, null],
         ['SqlGen::generate',  'items',                    null, null, null],
         ['FileGen::generate', 'complexImg',               null, null, null],    // alphamaps generated here are requires for spawns/waypoints
-        ['SqlGen::generate',  'spawns',                   null, null, null],    // this one ^_^
         ['SqlGen::generate',  'zones',                    null, null, null],
+        ['SqlGen::generate',  'spawns',                   null, null, null],    // this one ^_^
         ['SqlGen::generate',  'itemset',                  null, null, null],
         ['SqlGen::generate',  'item_stats',               null, null, null],
         ['SqlGen::generate',  'source',                   null, null, null],
@@ -155,7 +155,7 @@ function setup() : void
 
             if ($rCode == 301 || $rCode == 302)
             {
-                if (!empty($res['Location']) && preg_match("/(https?:\/\/)(.*)".strtr($testFile, ['/' => '\/', '.' => '\.'])."/i", $res['Location'], $n))
+                if (!empty($res['Location']) && preg_match("/(https?:\/\/)(.*)".strtr($testFile, ['/' => '\/', '.' => '\.'])."/i", is_array($res['Location']) ? array_pop($res['Location']) : $res['Location'], $n))
                 {
                     $protocol = $n[1];
                     $host     = $n[2];
