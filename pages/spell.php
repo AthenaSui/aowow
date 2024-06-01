@@ -1639,7 +1639,7 @@ class SpellPage extends GenericPage
             'cooldown' => 0
         );
 
-        if ($procCustom = DB::World()->selectRow('SELECT IF(ProcsPerMinute > 0, -ProcsPerMinute, Chance) AS chance, Cooldown AS cooldown FROM spell_proc WHERE ABS(SpellId) = ?d', $this->firstRank))
+        if ($procCustom = DB::World()->selectRow('SELECT IF(ppmRate > 0, -ppmRate, CustomChance) AS chance, Cooldown AS cooldown FROM spell_proc_event WHERE ABS(SpellId) = ?d', $this->firstRank))
             foreach ($procCustom as $k => $v)
                 if ($v)
                     $procData[$k] = $v;
