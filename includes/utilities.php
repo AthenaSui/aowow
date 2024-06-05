@@ -171,8 +171,7 @@ abstract class CLI
                 continue;
             }
 
-            if (!$nCols)
-                $nCols = count($row);
+            $nCols = max($nCols, count($row));
 
             for ($j = 0; $j < $nCols - 1; $j++)             // don't pad last column
                 $pads[$j] = max($pads[$j] ?? 0, mb_strlen($row[$j] ?? ''));
@@ -996,7 +995,7 @@ abstract class Util
         }
 
         // is int string (is_numeric can only handle strings in base 10)
-        if (is_numeric($number) || preg_match('/0[xb]?\d+/', $number))
+        if (is_numeric($number) || preg_match('/^0[xb]?\d+/', $number))
         {
             $number = intVal($number, 0);                   // 'base 0' auto-detects base
             if ($typeCast == NUM_CAST_INT)
