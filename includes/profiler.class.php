@@ -819,7 +819,7 @@ class Profiler
         }
 
         // reminder: this query should not fail: a placeholder entry is created as soon as a team listview is created or team detail page is called
-        $guildId = DB::Aowow()->selectCell('SELECT id FROM ?_profiler_guild WHERE realm = ?d AND realmGUID = ?d', $realmId, $guild['guildId']);
+        $guildId = DB::Aowow()->selectCell('SELECT id FROM ?_profiler_guild WHERE realm = ?d AND realmGUID = ?d', $realmId, $guild['guildid']);
 
         CLI::write('fetching guild #'.$guildGuid.' from realm #'.$realmId);
         CLI::write('writing...');
